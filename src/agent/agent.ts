@@ -1,7 +1,6 @@
 import { chatCompletion } from './groq';
-import { AGENT_TOOLS } from './tools';
 import { getSystemPrompt } from './prompts';
-import { executeTool, extractMemories, saveExtractedMemories } from './memory-extractor';
+import { extractMemories, saveExtractedMemories } from './memory-extractor';
 import { searchMemories, listMemories } from '../db/memories';
 import type { ChatMessage } from '../types';
 
@@ -16,7 +15,7 @@ export async function runAgent(
   extractionModel: string,
   messages: ChatMessage[],
   temperature: number = 0.7,
-  onToolCall?: (name: string) => void
+  _onToolCall?: (name: string) => void
 ): Promise<AgentResponse> {
   const now = new Date();
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -30,84 +29,26 @@ export async function runAgent(
     ...messages.map((m) => ({
       role: m.role,
       content: m.content,
-      ...(m.toolCalls ? { tool_calls: m.toolCalls } : {}),
     })),
   ];
+
+  console.log('Groq request:', chatModel, 'messages:', apiMessages.length);
 
   const response = await chatCompletion(
     apiKey,
     chatModel,
     apiMessages,
-    AGENT_TOOLS,
+    undefined,
     temperature
   );
 
-  console.log('Agent first response:', JSON.stringify(response.choices[0]?.message, null, 2));
-
   const assistantMessage = response.choices[0]?.message;
-  if (!assistantMessage) {
+  if (!assistantMessage || !assistantMessage.content) {
+    console.error('Empty response from Groq:', JSON.stringify(response));
     return { content: 'No response from AI.', toolCalls: [] };
   }
 
-  const toolCalls = assistantMessage.tool_calls;
-  const toolCallResults: { name: string; result: string }[] = [];
-
-  if (toolCalls && toolCalls.length > 0) {
-    console.log('Agent made tool calls:', toolCalls.length);
-    for (const tc of toolCalls) {
-      if (onToolCall) onToolCall(tc.function.name);
-
-      let args: Record<string, unknown>;
-      try {
-        args = JSON.parse(tc.function.arguments);
-      } catch {
-        toolCallResults.push({ name: tc.function.name, result: 'Invalid arguments' });
-        continue;
-      }
-
-      const result = await executeTool(tc.function.name, args);
-      toolCallResults.push({ name: tc.function.name, result: result.result });
-    }
-
-    const toolMessages = toolCalls.map((tc, i) => ({
-      role: 'tool' as const,
-      content: toolCallResults[i].result,
-      tool_call_id: tc.id,
-      name: tc.function.name,
-    }));
-
-    const followUpMessages = [...apiMessages, { ...assistantMessage, content: assistantMessage.content || '' }, ...toolMessages];
-
-    console.log('Making follow-up call...');
-    const followUpResponse = await chatCompletion(
-      apiKey,
-      chatModel,
-      followUpMessages,
-      undefined,
-      temperature
-    );
-
-    const finalContent = followUpResponse.choices[0]?.message?.content ?? '';
-    console.log('Follow-up content length:', finalContent.length);
-    console.log('Follow-up content:', finalContent.substring(0, 200));
-
-    const lastUserMessage = messages.filter((m) => m.role === 'user').pop();
-    if (lastUserMessage) {
-      const extracted = await extractMemories(
-        apiKey,
-        extractionModel,
-        lastUserMessage.content,
-        0.3
-      );
-      if (extracted.length > 0) {
-        await saveExtractedMemories(extracted);
-      }
-    }
-
-    return { content: finalContent, toolCalls: toolCallResults };
-  }
-
-  console.log('No tool calls, returning direct content:', (assistantMessage.content || '').substring(0, 200));
+  console.log('Got content, length:', assistantMessage.content.length);
 
   const lastUserMessage = messages.filter((m) => m.role === 'user').pop();
   if (lastUserMessage) {
@@ -123,7 +64,7 @@ export async function runAgent(
   }
 
   return {
-    content: assistantMessage.content ?? '',
+    content: assistantMessage.content,
     toolCalls: [],
   };
 }
