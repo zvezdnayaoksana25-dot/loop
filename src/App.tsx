@@ -1,117 +1,82 @@
-import { useState, useEffect } from 'react'
-import type { Settings } from './types'
-import { getSettings, saveSettings } from './db'
-import { initGroq } from './groq/client'
-import Chat from './components/Chat'
-import GraphView from './components/GraphView'
-import ExposureLadder from './components/ExposureLadder'
-import SettingsView from './components/SettingsView'
+import { useState, useEffect, useCallback } from 'react';
+import { db } from './db/database';
+import { DEFAULT_SETTINGS } from './types';
+import { AppLayout } from './components/layout/AppLayout';
+import { InstallPrompt } from './components/shared/InstallPrompt';
+import { BackupBanner } from './components/shared/BackupBanner';
+import { getDaysSinceLastBackup } from './db/export';
+import { usePWA } from './hooks/usePWA';
 
-type Tab = 'chat' | 'graph' | 'exposure' | 'settings'
-
-const TABS: { id: Tab; label: string; icon: string }[] = [
-  { id: 'chat', label: 'Чат', icon: '💬' },
-  { id: 'graph', label: 'Граф', icon: '🕸️' },
-  { id: 'exposure', label: 'Exposure', icon: '🪜' },
-  { id: 'settings', label: 'Настройки', icon: '⚙️' },
-]
-
-export default function App() {
-  const [settings, setSettings] = useState<Settings | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>('chat')
-  const [loading, setLoading] = useState(true)
+function App() {
+  const [settings, setSettings] = useState<Record<string, unknown>>(DEFAULT_SETTINGS);
+  const [showBackupBanner, setShowBackupBanner] = useState(false);
+  const [daysSinceBackup, setDaysSinceBackup] = useState<number | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const { showPrompt, install, dismiss: dismissInstall } = usePWA();
 
   useEffect(() => {
-    loadSettings()
-  }, [])
+    loadSettings();
+  }, []);
 
-  async function loadSettings() {
-    const s = await getSettings()
-    setSettings(s)
-    if (s.groq_api_key) {
-      initGroq(s.groq_api_key)
+  const loadSettings = async () => {
+    const allSettings = await db.settings.toArray();
+    const loaded: Record<string, unknown> = { ...DEFAULT_SETTINGS };
+    for (const setting of allSettings) {
+      loaded[setting.key] = setting.value;
     }
-    setLoading(false)
-  }
+    setSettings(loaded);
+    setIsLoaded(true);
 
-  async function handleSettingsChange(newSettings: Settings) {
-    await saveSettings(newSettings)
-    setSettings(newSettings)
-    if (newSettings.groq_api_key) {
-      initGroq(newSettings.groq_api_key)
+    const days = await getDaysSinceLastBackup();
+    if (days !== null && days >= 3) {
+      setDaysSinceBackup(days);
+      setShowBackupBanner(true);
     }
-  }
+  };
 
-  if (loading || !settings) {
-    return (
-      <div className="h-full flex items-center justify-center bg-[var(--bg)]">
-        <p className="text-[var(--text-muted)]">Загрузка...</p>
-      </div>
-    )
-  }
+  const updateSetting = useCallback(async (key: string, value: unknown) => {
+    await db.settings.put({ key, value, updatedAt: new Date() });
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  }, []);
 
-  if (!settings.initialized || !settings.groq_api_key) {
+  if (!isLoaded) {
     return (
-      <div className="h-full flex items-center justify-center bg-[var(--bg)]">
-        <div className="max-w-md text-center p-6">
-          <h1 className="text-3xl font-bold mb-2">Loop</h1>
-          <p className="text-[var(--text-muted)] mb-6">
-            Введи Groq API ключ чтобы начать.
-          </p>
-          <SettingsView settings={settings} onSettingsChange={handleSettingsChange} />
+      <div className="h-full w-full flex items-center justify-center bg-[var(--bg-primary)]">
+        <div className="text-center">
+          <div className="text-4xl mb-4 animate-pulse-slow">🧠</div>
+          <p className="text-sm text-[var(--text-secondary)]">Loading Second Brain...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="h-full flex flex-col bg-[var(--bg)]">
-      <header className="border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-bold">
-            <span className="text-[var(--accent)]">Loop</span>
-            <span className="text-[var(--text-muted)] text-sm font-normal ml-2">
-              {activeTab === 'chat' ? 'AI-психолог' :
-               activeTab === 'graph' ? 'Граф памяти' :
-               activeTab === 'exposure' ? 'Лестница экспозиции' :
-               'Настройки'}
-            </span>
-          </h1>
-        </div>
-        <div className="flex items-center gap-2">
-          {settings.session_count > 0 && (
-            <span className="text-xs text-[var(--text-muted)]">
-              {settings.session_count} завершённых
-            </span>
-          )}
-        </div>
-      </header>
+    <div className="h-full w-full flex flex-col">
+      {showBackupBanner && daysSinceBackup && (
+        <BackupBanner
+          daysSinceBackup={daysSinceBackup}
+          onDismiss={() => setShowBackupBanner(false)}
+        />
+      )}
 
-      <main className="flex-1 overflow-hidden">
-        {activeTab === 'chat' && <Chat settings={settings} onSessionEnd={async () => { const s = await getSettings(); setSettings(s); }} />}
-        {activeTab === 'graph' && <GraphView />}
-        {activeTab === 'exposure' && <ExposureLadder settings={settings} />}
-        {activeTab === 'settings' && (
-          <SettingsView settings={settings} onSettingsChange={handleSettingsChange} />
-        )}
-      </main>
+      <div className="flex-1 overflow-hidden">
+        <AppLayout
+          apiKey={settings.groqApiKey as string}
+          chatModel={settings.chatModel as string}
+          extractionModel={settings.extractionModel as string}
+          temperature={settings.temperature as number}
+          autoMemoryExtraction={settings.autoMemoryExtraction as boolean}
+          autoConsolidation={settings.autoConsolidation as boolean}
+          insightFrequency={settings.insightFrequency as number}
+          onUpdateSetting={updateSetting}
+        />
+      </div>
 
-      <nav className="border-t border-[var(--border)] flex">
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-3 text-xs transition-colors ${
-              activeTab === tab.id
-                ? 'text-[var(--accent)]'
-                : 'text-[var(--text-muted)] hover:text-[var(--text)]'
-            }`}
-          >
-            <span className="block text-lg mb-0.5">{tab.icon}</span>
-            {tab.label}
-          </button>
-        ))}
-      </nav>
+      {showPrompt && (
+        <InstallPrompt onInstall={install} onDismiss={dismissInstall} />
+      )}
     </div>
-  )
+  );
 }
+
+export default App;

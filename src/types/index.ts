@@ -1,95 +1,96 @@
-export interface Fact {
-  id: string
-  text: string
-  category: 'belief' | 'emotion' | 'event' | 'pattern' | 'trigger' | 'progress'
-  confidence: 'high' | 'medium' | 'low'
-  timestamp: string
-  source_session: string
+export type MemoryType = 'episodic' | 'semantic' | 'procedural';
+export type MemoryDomain = 'work' | 'learning' | 'health' | 'personal' | 'finance' | 'goals' | 'tech' | 'general';
+export type MemorySource = 'agent' | 'user';
+
+export interface ContradictionEntry {
+  oldContent: string;
+  newContent: string;
+  resolvedAt: Date;
 }
 
-export interface GraphNode {
-  id: string
-  label: string
-  type: 'belief' | 'emotion' | 'event' | 'pattern' | 'trigger' | 'progress'
-  val?: number
+export interface Memory {
+  id?: number;
+  type: MemoryType;
+  domain: MemoryDomain;
+  title: string;
+  content: string;
+  tags: string[];
+  relatedIds: number[];
+  source: MemorySource;
+  sourceChatId?: number;
+  importance: number;
+  confidence: number;
+  createdAt: Date;
+  updatedAt: Date;
+  lastAccessedAt: Date;
+  accessCount: number;
+  version: number;
+  mergedFromIds: number[];
+  contradictionHistory: ContradictionEntry[];
 }
 
-export interface GraphEdge {
-  source: string
-  target: string
-  relation: 'triggered_by' | 'leads_to' | 'associated_with' | 'contradicts' | 'reinforces'
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system' | 'tool';
+  content: string;
+  toolCalls?: ToolCall[];
+  timestamp: Date;
 }
 
-export interface GraphData {
-  nodes: GraphNode[]
-  edges: GraphEdge[]
+export interface ToolCall {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
 }
 
-export interface Profile {
-  core_beliefs: string[]
-  triggers: string[]
-  patterns: Record<string, string>
-  exposure_progress: {
-    steps_completed: number[]
-    current_step: number
-    anxiety_trend: string
-  }
-  active_threads: string[]
-  avoidance_stats: {
-    total_avoidances: number
-    avg_relief_duration_minutes: number
-    avg_post_avoidance_anxiety_increase: number
-  }
-  last_consolidated: string
+export interface Chat {
+  id?: number;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: Date;
+  updatedAt: Date;
+  memorySnapshot: string;
 }
 
-export interface Message {
-  role: 'user' | 'assistant' | 'system'
-  content: string
-  timestamp: string
+export interface Setting {
+  key: string;
+  value: unknown;
+  updatedAt: Date;
 }
 
-export interface Session {
-  id: string
-  timestamp: string
-  messages: Message[]
-  summary: string
-  token_count: number
-  fact_ids_extracted: string[]
-}
+export const DOMAINS: MemoryDomain[] = ['work', 'learning', 'health', 'personal', 'finance', 'goals', 'tech', 'general'];
 
-export interface Insight {
-  id: string
-  text: string
-  timestamp: string
-  source: 'consolidation' | 'extraction' | 'user'
-}
+export const DOMAIN_COLORS: Record<MemoryDomain, string> = {
+  work: '#027AFF',
+  learning: '#A882FF',
+  health: '#44CF6E',
+  personal: '#FA99CD',
+  finance: '#E9973F',
+  goals: '#53DFDD',
+  tech: '#E0DE71',
+  general: '#94A3B8',
+};
 
-export interface ExposureStep {
-  id: number
-  description: string
-  completed: boolean
-  completed_at?: string
-  anxiety_before: number
-  anxiety_after: number
-  attempts: number
-}
+export const DOMAIN_LABELS: Record<MemoryDomain, string> = {
+  work: 'Work',
+  learning: 'Learning',
+  health: 'Health',
+  personal: 'Personal',
+  finance: 'Finance',
+  goals: 'Goals',
+  tech: 'Tech',
+  general: 'General',
+};
 
-export interface Settings {
-  groq_api_key: string
-  model_main: string
-  model_cheap: string
-  session_count: number
-  initialized: boolean
-}
-
-export interface FactExtractionResult {
-  new_facts: Omit<Fact, 'id' | 'source_session'>[]
-  updated_facts: { id: string; text: string; reason: string }[]
-  contradicted_facts: { id: string; reason: string }[]
-}
-
-export interface ConsolidationResult {
-  profile: Profile
-  new_insights: string[]
-}
+export const DEFAULT_SETTINGS = {
+  groqApiKey: '',
+  chatModel: 'llama-3.3-70b-versatile',
+  extractionModel: 'llama-3.1-8b-instant',
+  temperature: 0.7,
+  autoMemoryExtraction: true,
+  autoConsolidation: true,
+  insightFrequency: 10,
+  lastBackupDate: null as string | null,
+};
