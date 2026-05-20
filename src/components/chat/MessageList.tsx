@@ -44,28 +44,19 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
         className="h-full overflow-y-auto px-4 py-3 space-y-3"
         style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
       >
-      {messages.map((msg, i) => (
-        <MessageBubble key={i} message={msg} />
-      ))}
+        {messages.map((msg, i) => (
+          <MessageBubble key={i} message={msg} />
+        ))}
 
-      {activeToolCalls.length > 0 && (
-        <ToolCallIndicator toolCalls={activeToolCalls} />
-      )}
+        {activeToolCalls.length > 0 && (
+          <ToolCallIndicator toolCalls={activeToolCalls} />
+        )}
 
-      {streamingContent && !hasAssistantResponse && (
-        <div className="animate-fade-in">
-          <div className="text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap text-sm">
-            {streamingContent}
-            <span className="inline-block w-0.5 h-4 bg-[var(--accent)] ml-0.5 animate-pulse" />
-          </div>
-        </div>
-      )}
+        {isProcessing && !hasAssistantResponse && activeToolCalls.length === 0 && (
+          <TypingIndicator />
+        )}
 
-      {isProcessing && !streamingContent && activeToolCalls.length === 0 && (
-        <TypingIndicator />
-      )}
-
-      <div className="h-2" />
+        <div className="h-2" />
       </div>
     </div>
   );

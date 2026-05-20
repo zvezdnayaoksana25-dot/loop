@@ -119,7 +119,7 @@ export async function runAgent(
   }
 
   return {
-    content: assistantMessage.content || '',
+    content: assistantMessage.content ?? '',
     toolCalls: [],
   };
 }

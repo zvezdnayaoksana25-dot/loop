@@ -27,22 +27,15 @@ export function ChatScreen({
   const { currentChat, chats, loadChats, loadChat, createNewChat, sendMessage, deleteChat } = useChat();
   const { isProcessing, activeToolCalls, sendMessage: agentSend, runInsightAnalysis } = useAgent();
   const [showHistory, setShowHistory] = useState(false);
-  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
-  const streamingRef = useRef('');
-  const [streamingText, setStreamingText] = useState('');
+  const [pendingMessage, setPendingMessage] = useState<ChatMessage | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     loadChats();
   }, [loadChats]);
 
-  useEffect(() => {
-    if (currentChat) {
-      setLocalMessages(currentChat.messages);
-    } else {
-      setLocalMessages([]);
-    }
-  }, [currentChat]);
+  const messages = currentChat?.messages || [];
+  const displayMessages = pendingMessage ? [...messages, pendingMessage] : messages;
 
   const handleSend = useCallback(async (content: string) => {
     if (!content.trim() || isProcessing) return;
@@ -58,47 +51,46 @@ export function ChatScreen({
       timestamp: new Date(),
     };
 
-    setLocalMessages((prev) => [...prev, userMessage]);
     await sendMessage(chatId!, userMessage);
 
-    const messagesForAgent = [...localMessages, userMessage];
-    streamingRef.current = '';
-    setStreamingText('');
+    const allMessages = [...(currentChat?.messages || []), userMessage];
 
+    let accumulated = '';
     const response = await agentSend(
       apiKey,
       chatModel,
       extractionModel,
-      messagesForAgent,
+      allMessages,
       temperature,
       (chunk) => {
-        streamingRef.current += chunk;
-        setStreamingText(streamingRef.current);
+        accumulated += chunk;
+        setPendingMessage({
+          role: 'assistant',
+          content: accumulated,
+          timestamp: new Date(),
+        });
       }
     );
 
-    const finalContent = response.content || streamingRef.current;
+    const finalContent = response.content || accumulated;
 
     const assistantMessage: ChatMessage = {
       role: 'assistant',
-      content: finalContent,
+      content: finalContent || 'Sorry, I could not generate a response.',
       timestamp: new Date(),
     };
 
-    streamingRef.current = '';
-    setStreamingText('');
-    setLocalMessages((prev) => [...prev, assistantMessage]);
+    setPendingMessage(null);
     await sendMessage(chatId!, assistantMessage);
 
-    const userCount = [...localMessages, userMessage, assistantMessage].filter((m) => m.role === 'user').length;
+    const userCount = [...allMessages, assistantMessage].filter((m) => m.role === 'user').length;
     if (userCount > 0 && userCount % insightFrequency === 0) {
       await runInsightAnalysis(apiKey, extractionModel);
     }
-  }, [currentChat, isProcessing, localMessages, apiKey, chatModel, extractionModel, temperature, insightFrequency, createNewChat, sendMessage, agentSend, runInsightAnalysis]);
+  }, [currentChat, isProcessing, apiKey, chatModel, extractionModel, temperature, insightFrequency, createNewChat, sendMessage, agentSend, runInsightAnalysis]);
 
   const handleNewChat = useCallback(async () => {
     await createNewChat();
-    setLocalMessages([]);
     setShowHistory(false);
   }, [createNewChat]);
 
@@ -121,14 +113,11 @@ export function ChatScreen({
         content: insightContent,
         timestamp: new Date(),
       };
-      setLocalMessages((prev) => [...prev, insightMessage]);
       if (currentChat?.id) {
         await sendMessage(currentChat.id, insightMessage);
       }
     }
   }, [apiKey, extractionModel, runInsightAnalysis, currentChat, sendMessage]);
-
-  const showStreaming = isProcessing && streamingText.length > 0;
 
   return (
     <div className="h-full flex flex-col">
@@ -150,8 +139,8 @@ export function ChatScreen({
 
       <div className="flex-1 overflow-hidden min-h-0">
         <MessageList
-          messages={localMessages}
-          streamingContent={showStreaming ? streamingText : ''}
+          messages={displayMessages}
+          streamingContent={isProcessing && pendingMessage ? pendingMessage.content : ''}
           activeToolCalls={activeToolCalls}
           isProcessing={isProcessing}
         />
