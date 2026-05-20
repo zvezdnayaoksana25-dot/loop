@@ -1,4 +1,4 @@
-import type { MemoryDomain } from '../../types';
+﻿import type { MemoryDomain } from '../../types';
 import { DOMAIN_LABELS, DOMAIN_COLORS } from '../../utils/constants';
 
 interface DomainFilterProps {
@@ -21,7 +21,7 @@ export function DomainFilter({
           <button
             key={domain}
             onClick={() => onDomainChange(domain)}
-            className="px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0"
+            className="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all shrink-0 min-h-[32px]"
             style={
               isActive
                 ? domain === 'all'

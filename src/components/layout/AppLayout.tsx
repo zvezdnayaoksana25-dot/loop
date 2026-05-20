@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { MessageSquare, Brain } from 'lucide-react';
 import { ChatScreen } from '../chat/ChatScreen';
 import { MemoryScreen } from '../memory/MemoryScreen';
@@ -64,11 +64,11 @@ export function AppLayout({
       >
         <button
           onClick={() => setActiveTab('chat')}
-          className="relative flex-1 flex flex-col items-center justify-center py-2 transition-colors duration-150"
+          className="relative flex-1 flex flex-col items-center justify-center py-3 transition-colors duration-150"
         >
-          <MessageSquare size={22} color={activeTab === 'chat' ? 'var(--accent)' : 'var(--text-tertiary)'} />
+          <MessageSquare size={24} color={activeTab === 'chat' ? 'var(--accent)' : 'var(--text-tertiary)'} />
           <span
-            className="text-xs mt-0.5 font-medium"
+            className="text-xs mt-1 font-medium"
             style={{ color: activeTab === 'chat' ? 'var(--accent)' : 'var(--text-tertiary)' }}
           >
             Chat
@@ -79,11 +79,11 @@ export function AppLayout({
         </button>
         <button
           onClick={() => setActiveTab('memory')}
-          className="relative flex-1 flex flex-col items-center justify-center py-2 transition-colors duration-150"
+          className="relative flex-1 flex flex-col items-center justify-center py-3 transition-colors duration-150"
         >
-          <Brain size={22} color={activeTab === 'memory' ? 'var(--accent)' : 'var(--text-tertiary)'} />
+          <Brain size={24} color={activeTab === 'memory' ? 'var(--accent)' : 'var(--text-tertiary)'} />
           <span
-            className="text-xs mt-0.5 font-medium"
+            className="text-xs mt-1 font-medium"
             style={{ color: activeTab === 'memory' ? 'var(--accent)' : 'var(--text-tertiary)' }}
           >
             Memory

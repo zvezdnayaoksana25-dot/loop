@@ -1,4 +1,4 @@
-import type { ChatMessage } from '../../types';
+﻿import type { ChatMessage } from '../../types';
 import { formatTime } from '../../utils/time';
 
 interface MessageBubbleProps {
@@ -10,10 +10,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
     return (
       <div className="flex justify-end animate-fade-in">
         <div className="max-w-[85%]">
-          <div className="px-3 py-2 rounded-2xl rounded-tr-sm bg-[var(--bubble-user)] text-white">
+          <div className="px-3.5 py-2.5 rounded-2xl rounded-tr-sm bg-[var(--bubble-user)] text-white">
             <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
           </div>
-          <p className="text-xs text-[var(--text-tertiary)] text-right mt-0.5">
+          <p className="text-xs text-[var(--text-tertiary)] text-right mt-1">
             {formatTime(new Date(message.timestamp))}
           </p>
         </div>
@@ -33,7 +33,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             {message.content}
           </p>
         </div>
-        <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
+        <p className="text-xs text-[var(--text-tertiary)] mt-1">
           {formatTime(new Date(message.timestamp))}
         </p>
       </div>

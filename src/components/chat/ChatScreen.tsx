@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { Menu, Settings } from 'lucide-react';
 import { useChat } from '../../hooks/useChat';
 import { useAgent } from '../../hooks/useAgent';
@@ -60,31 +60,35 @@ export function ChatScreen({
     setLocalMessages((prev) => [...prev, userMessage]);
     await sendMessage(chatId!, userMessage);
 
-    const allMessages = [...localMessages, userMessage];
+    const messagesForAgent = [...localMessages, userMessage];
     setStreamingText('');
 
     const response = await agentSend(
       apiKey,
       chatModel,
       extractionModel,
-      allMessages,
+      messagesForAgent,
       temperature,
       (chunk) => setStreamingText((prev) => prev + chunk)
     );
 
+    const finalContent = response.content || streamingText;
+
     const assistantMessage: ChatMessage = {
       role: 'assistant',
-      content: response.content,
+      content: finalContent,
       timestamp: new Date(),
     };
 
+    setStreamingText('');
     setLocalMessages((prev) => [...prev, assistantMessage]);
     await sendMessage(chatId!, assistantMessage);
 
-    if (localMessages.length > 0 && localMessages.length % insightFrequency === 0) {
+    const userCount = [...localMessages, userMessage, assistantMessage].filter((m) => m.role === 'user').length;
+    if (userCount > 0 && userCount % insightFrequency === 0) {
       await runInsightAnalysis(apiKey, extractionModel);
     }
-  }, [currentChat, isProcessing, localMessages, apiKey, chatModel, extractionModel, temperature, insightFrequency, createNewChat, sendMessage, agentSend, runInsightAnalysis]);
+  }, [currentChat, isProcessing, localMessages, streamingText, apiKey, chatModel, extractionModel, temperature, insightFrequency, createNewChat, sendMessage, agentSend, runInsightAnalysis]);
 
   const handleNewChat = useCallback(async () => {
     await createNewChat();
@@ -105,9 +109,10 @@ export function ChatScreen({
     if (!apiKey) return;
     const insights = await runInsightAnalysis(apiKey, extractionModel);
     if (insights.length > 0) {
+      const insightContent = '## Insights Analysis\n\nI found ' + insights.length + ' insights:\n\n' + insights.map((i) => '- **' + i.title + '**: ' + i.content).join('\n');
       const insightMessage: ChatMessage = {
         role: 'assistant',
-        content: `## Insights Analysis\n\nI found ${insights.length} insights:\n\n${insights.map((i) => `- **${i.title}**: ${i.content}`).join('\n')}`,
+        content: insightContent,
         timestamp: new Date(),
       };
       setLocalMessages((prev) => [...prev, insightMessage]);
@@ -117,28 +122,30 @@ export function ChatScreen({
     }
   }, [apiKey, extractionModel, runInsightAnalysis, currentChat, sendMessage]);
 
+  const showStreaming = isProcessing && streamingText.length > 0;
+
   return (
     <div className="h-full flex flex-col">
       <header className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-primary)] shrink-0">
         <button
           onClick={() => setShowHistory(true)}
-          className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
         >
-          <Menu size={20} color="var(--text-primary)" />
+          <Menu size={22} color="var(--text-primary)" />
         </button>
         <h1 className="text-base font-semibold text-[var(--text-primary)]">Second Brain</h1>
         <button
           onClick={onOpenSettings}
-          className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
         >
-          <Settings size={20} color="var(--text-primary)" />
+          <Settings size={22} color="var(--text-primary)" />
         </button>
       </header>
 
       <div className="flex-1 overflow-hidden min-h-0">
         <MessageList
           messages={localMessages}
-          streamingContent={streamingText}
+          streamingContent={showStreaming ? streamingText : ''}
           activeToolCalls={activeToolCalls}
           isProcessing={isProcessing}
         />

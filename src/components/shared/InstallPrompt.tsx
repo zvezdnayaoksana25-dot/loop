@@ -1,4 +1,4 @@
-interface InstallPromptProps {
+﻿interface InstallPromptProps {
   onInstall: () => void;
   onDismiss: () => void;
 }
@@ -14,7 +14,7 @@ export function InstallPrompt({ onInstall, onDismiss }: InstallPromptProps) {
         </p>
         <button
           onClick={onInstall}
-          className="w-full py-2.5 bg-[var(--accent)] rounded-xl text-sm font-semibold text-white hover:bg-[var(--accent-hover)] transition-colors"
+          className="w-full py-3 bg-[var(--accent)] rounded-xl text-sm font-semibold text-white hover:bg-[var(--accent-hover)] transition-colors"
         >
           Add to Home Screen
         </button>

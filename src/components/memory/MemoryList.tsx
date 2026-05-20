@@ -1,4 +1,4 @@
-import type { Memory } from '../../types';
+﻿import type { Memory } from '../../types';
 import { MemoryCard } from './MemoryCard';
 
 interface MemoryListProps {
@@ -14,7 +14,7 @@ export function MemoryList({ memories, onSelect }: MemoryListProps) {
           <div className="text-4xl mb-4">📝</div>
           <h3 className="text-base font-medium text-[var(--text-primary)] mb-2">No memories yet</h3>
           <p className="text-sm text-[var(--text-secondary)]">
-            Start chatting and I'll automatically build your knowledge base.
+            Start chatting and I will automatically build your knowledge base.
           </p>
         </div>
       </div>

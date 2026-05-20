@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { X, Plus, Trash2, MessageSquare } from 'lucide-react';
 import type { Chat } from '../../types';
 import { formatTimestamp } from '../../utils/time';
@@ -55,18 +55,18 @@ export function ChatHistoryDrawer({
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] shrink-0">
           <h2 className="text-base font-semibold text-[var(--text-primary)]">Chats</h2>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)]">
-            <X size={18} color="var(--text-primary)" />
+          <button onClick={onClose} className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)]">
+            <X size={20} color="var(--text-primary)" />
           </button>
         </div>
 
-        <div className="px-4 py-2 shrink-0">
+        <div className="px-4 py-2.5 shrink-0">
           <input
             type="text"
             placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full px-3 py-2 bg-[var(--bg-tertiary)] rounded-lg text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)]"
+            className="w-full px-3 py-2.5 bg-[var(--bg-tertiary)] rounded-lg text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)]"
           />
         </div>
 
@@ -80,14 +80,11 @@ export function ChatHistoryDrawer({
                 {groupChats.map((chat) => (
                   <div
                     key={chat.id}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                      chat.id === currentChatId
-                        ? 'bg-[var(--bg-tertiary)]'
-                        : 'hover:bg-[var(--bg-tertiary)]/50'
-                    }`}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg min-h-[44px] transition-colors"
+                    style={{ backgroundColor: chat.id === currentChatId ? 'var(--bg-tertiary)' : 'transparent' }}
                     onClick={() => chat.id && onSelect(chat.id)}
                   >
-                    <MessageSquare size={14} color="var(--text-secondary)" className="shrink-0" />
+                    <MessageSquare size={16} color="var(--text-secondary)" className="shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-[var(--text-primary)] truncate">{chat.title}</p>
                       <p className="text-xs text-[var(--text-tertiary)]">
@@ -100,9 +97,9 @@ export function ChatHistoryDrawer({
                           e.stopPropagation();
                           onDelete(chat.id!);
                         }}
-                        className="p-1 rounded shrink-0"
+                        className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded shrink-0"
                       >
-                        <Trash2 size={12} color="var(--error)" />
+                        <Trash2 size={14} color="var(--error)" />
                       </button>
                     )}
                   </div>
@@ -122,9 +119,9 @@ export function ChatHistoryDrawer({
         <div className="px-4 py-3 border-t border-[var(--border)] shrink-0">
           <button
             onClick={onNew}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--accent)] rounded-lg text-sm font-medium text-white hover:bg-[var(--accent-hover)] transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[var(--accent)] rounded-lg text-sm font-medium text-white hover:bg-[var(--accent-hover)] transition-colors"
           >
-            <Plus size={14} />
+            <Plus size={16} />
             New Chat
           </button>
         </div>

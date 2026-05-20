@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+﻿import { useState, type KeyboardEvent } from 'react';
 import { Send, Sparkles, Plus } from 'lucide-react';
 
 interface ChatInputProps {
@@ -37,13 +37,13 @@ export function ChatInput({ onSend, onAnalyze, onNewChat, isProcessing, inputRef
   };
 
   return (
-    <div className="flex items-center gap-2 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] px-2 py-1.5">
+    <div className="flex items-center gap-2 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border)] px-2 py-2">
       <button
         onClick={onNewChat}
-        className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors shrink-0"
+        className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors shrink-0"
         title="New chat"
       >
-        <Plus size={16} color="var(--text-secondary)" />
+        <Plus size={18} color="var(--text-secondary)" />
       </button>
       <textarea
         ref={inputRef}
@@ -57,21 +57,18 @@ export function ChatInput({ onSend, onAnalyze, onNewChat, isProcessing, inputRef
       />
       <button
         onClick={onAnalyze}
-        className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors shrink-0"
+        className="min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors shrink-0"
         title="Analyze"
       >
-        <Sparkles size={16} color="var(--accent)" />
+        <Sparkles size={18} color="var(--accent)" />
       </button>
       <button
         onClick={handleSend}
         disabled={!value.trim() || isProcessing}
-        className={`p-2 rounded-full transition-all shrink-0 ${
-          value.trim() && !isProcessing
-            ? 'bg-[var(--accent)] animate-glow'
-            : 'bg-[var(--bg-tertiary)]'
-        }`}
+        className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full transition-all shrink-0"
+        style={{ backgroundColor: value.trim() && !isProcessing ? 'var(--accent)' : 'var(--bg-tertiary)' }}
       >
-        <Send size={14} color={value.trim() && !isProcessing ? 'white' : 'var(--text-tertiary)'} />
+        <Send size={16} color={value.trim() && !isProcessing ? 'white' : 'var(--text-tertiary)'} />
       </button>
     </div>
   );

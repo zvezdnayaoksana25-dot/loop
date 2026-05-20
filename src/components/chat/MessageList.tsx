@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+﻿import { useEffect, useRef } from 'react';
 import type { ChatMessage } from '../../types';
 import { MessageBubble } from './MessageBubble';
 import { ToolCallIndicator } from './ToolCallIndicator';
@@ -20,6 +20,9 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
     }
   }, [messages, streamingContent, activeToolCalls]);
 
+  const lastMsg = messages[messages.length - 1];
+  const hasAssistantResponse = lastMsg && lastMsg.role === 'assistant' && lastMsg.content.length > 0;
+
   if (messages.length === 0 && !streamingContent) {
     return (
       <div className="h-full flex items-center justify-center px-6">
@@ -27,7 +30,7 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
           <div className="text-4xl mb-4">🧠</div>
           <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Your Second Brain</h2>
           <p className="text-[var(--text-secondary)] text-sm max-w-xs">
-            I remember everything you tell me. Start a conversation and I'll build your knowledge base.
+            I remember everything you tell me. Start a conversation and I will build your knowledge base.
           </p>
         </div>
       </div>
@@ -48,7 +51,7 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
         <ToolCallIndicator toolCalls={activeToolCalls} />
       )}
 
-      {streamingContent && (
+      {streamingContent && !hasAssistantResponse && (
         <div className="animate-fade-in">
           <div className="text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap text-sm">
             {streamingContent}
