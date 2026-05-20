@@ -67,24 +67,28 @@ export default function App() {
   return (
     <div className="h-full flex flex-col bg-[var(--bg)]">
       <header className="border-b border-[var(--border)] px-4 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold">
-          <span className="text-[var(--accent)]">Loop</span>
-          <span className="text-[var(--text-muted)] text-sm font-normal ml-2">
-            {activeTab === 'chat' ? 'AI-психолог' :
-             activeTab === 'graph' ? 'Граф памяти' :
-             activeTab === 'exposure' ? 'Лестница экспозиции' :
-             'Настройки'}
-          </span>
-        </h1>
-        {settings.session_count > 0 && (
-          <span className="text-xs text-[var(--text-muted)]">
-            {settings.session_count} сессий
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-bold">
+            <span className="text-[var(--accent)]">Loop</span>
+            <span className="text-[var(--text-muted)] text-sm font-normal ml-2">
+              {activeTab === 'chat' ? 'AI-психолог' :
+               activeTab === 'graph' ? 'Граф памяти' :
+               activeTab === 'exposure' ? 'Лестница экспозиции' :
+               'Настройки'}
+            </span>
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          {settings.session_count > 0 && (
+            <span className="text-xs text-[var(--text-muted)]">
+              {settings.session_count} завершённых
+            </span>
+          )}
+        </div>
       </header>
 
       <main className="flex-1 overflow-hidden">
-        {activeTab === 'chat' && <Chat settings={settings} />}
+        {activeTab === 'chat' && <Chat settings={settings} onSessionEnd={async () => { const s = await getSettings(); setSettings(s); }} />}
         {activeTab === 'graph' && <GraphView />}
         {activeTab === 'exposure' && <ExposureLadder settings={settings} />}
         {activeTab === 'settings' && (

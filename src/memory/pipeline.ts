@@ -10,9 +10,19 @@ export async function buildChatContext(
   settings: Settings,
 ): Promise<Message[]> {
   const profile = await db.getProfile()
-  const recentSessions = await db.getRecentSessions(2)
+  const recentSessions = await db.getRecentSessions(3)
   const allFacts = await db.getAllFacts()
+  const allSessions = await db.getSessions()
 
+  // Temporal context
+  const firstSession = allSessions.length > 0
+    ? allSessions[allSessions.length - 1]
+    : null
+  const daysSinceFirst = firstSession
+    ? Math.floor((Date.now() - new Date(firstSession.timestamp).getTime()) / (1000 * 60 * 60 * 24))
+    : 0
+
+  // L0: Identity
   const identity = `Ты — прямой, честный AI-психолог. Специализация: CBT, цикл избегания тревоги, экспозиционная терапия.
 
 СТИЛЬ:
@@ -34,47 +44,54 @@ export async function buildChatContext(
 5. Данные важнее чувств.
 6. Самокомpassion — инструмент для изменения поведения, не повод жалеть себя.`
 
+  // Temporal context block
+  const temporalContext = `\n\nВРЕМЕННОЙ КОНТЕКСТ:
+Первая сессия: ${firstSession ? new Date(firstSession.timestamp).toLocaleDateString('ru-RU') : 'сегодня'}
+Всего сессий: ${allSessions.length}
+Дней работы: ${daysSinceFirst}
+Всего фактов в памяти: ${allFacts.length}
+Последняя консолидация профиля: ${profile ? new Date(profile.last_consolidated).toLocaleDateString('ru-RU') : 'ещё не было'}`
+
+  // L1: Profile
   let profileContext = ''
   if (profile) {
-    profileContext = `\nПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ:
+    profileContext = `\n\nПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ:
 Убеждения: ${profile.core_beliefs.join(', ') || 'не определены'}
 Триггеры: ${profile.triggers.join(', ') || 'не определены'}
 Паттерны: ${Object.entries(profile.patterns).map(([k, v]) => `${k}: ${v}`).join('; ') || 'не определены'}
 Прогресс exposure: шаг ${profile.exposure_progress.current_step}, выполнено: ${profile.exposure_progress.steps_completed.join(', ') || 'ничего'}
+Тренд тревоги: ${profile.exposure_progress.anxiety_trend || 'нет данных'}
 Активные темы: ${profile.active_threads.join(', ') || 'нет'}
-Статистика избегания: ${profile.avoidance_stats.total_avoidances} избеганий, облегчение ~${profile.avoidance_stats.avg_relief_duration_minutes}мин`
+Статистика избегания: ${profile.avoidance_stats.total_avoidances} избеганий, облегчение ~${profile.avoidance_stats.avg_relief_duration_minutes}мин, рост тревоги после +${profile.avoidance_stats.avg_post_avoidance_anxiety_increase}`
   }
 
+  // L2: Recent sessions
   let sessionsContext = ''
   if (recentSessions.length > 0) {
-    sessionsContext = '\n\nНЕДАВНИЕ СЕССИИ:\n' + recentSessions.map(s =>
-      `[${new Date(s.timestamp).toLocaleDateString('ru-RU')}] ${s.summary}`
+    sessionsContext = '\n\nПРОШЛЫЕ СЕССИИ:\n' + recentSessions.map(s =>
+      `--- Сессия от ${new Date(s.timestamp).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })} ---\n${s.summary}`
     ).join('\n')
   }
 
+  // L3: Relevant facts retrieval
   let factsContext = ''
   try {
     const relevantIndices = await retrieveRelevantFacts(userMessage, allFacts, settings.model_cheap)
     if (relevantIndices.length > 0) {
       const relevantFacts = relevantIndices.map(i => allFacts[i]).filter(Boolean)
       factsContext = '\n\nРЕЛЕВАНТНЫЕ ФАКТЫ:\n' + relevantFacts.map(f =>
-        `[${f.category}] ${f.text}`
+        `[${f.category}] ${f.text} (${new Date(f.timestamp).toLocaleDateString('ru-RU')})`
       ).join('\n')
     }
   } catch {
     // Retrieval failed — continue without L3
   }
 
-  const systemContent = identity + profileContext + sessionsContext + factsContext
+  const systemContent = identity + temporalContext + profileContext + sessionsContext + factsContext
 
   const messages: Message[] = [
     { role: 'system', content: systemContent, timestamp: new Date().toISOString() },
   ]
-
-  for (const session of recentSessions) {
-    const recentMessages = session.messages.slice(-5)
-    messages.push(...recentMessages)
-  }
 
   return messages
 }

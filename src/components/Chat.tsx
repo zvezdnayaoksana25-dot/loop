@@ -5,9 +5,10 @@ import { chatCompletion } from '../groq/client'
 
 interface ChatProps {
   settings: Settings
+  onSessionEnd: () => void
 }
 
-export default function Chat({ settings }: ChatProps) {
+export default function Chat({ settings, onSessionEnd }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -48,11 +49,6 @@ export default function Chat({ settings }: ChatProps) {
       }
 
       setMessages(prev => [...prev, assistantMessage])
-
-      const allSessionMessages = [...contextMessages.filter(m => m.role !== 'system'), userMessage, assistantMessage]
-      setProcessing(true)
-      await saveAndProcessSession(allSessionMessages, settings)
-      setProcessing(false)
     } catch (err) {
       const errorMessage: Message = {
         role: 'assistant',
@@ -65,6 +61,24 @@ export default function Chat({ settings }: ChatProps) {
     }
   }, [input, loading, settings])
 
+  const handleNewSession = useCallback(async () => {
+    if (messages.length === 0) return
+    if (!confirm('Завершить текущую сессию и начать новую?')) return
+
+    setProcessing(true)
+
+    try {
+      const allSessionMessages = messages.filter(m => m.role !== 'system')
+      await saveAndProcessSession(allSessionMessages, settings)
+      setMessages([])
+      onSessionEnd()
+    } catch (err) {
+      console.error('Failed to save session:', err)
+    } finally {
+      setProcessing(false)
+    }
+  }, [messages, settings, onSessionEnd])
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -72,96 +86,31 @@ export default function Chat({ settings }: ChatProps) {
     }
   }
 
-  const handleQuickStart = useCallback(async (text: string) => {
-    if (loading) return
-
-    const userMessage: Message = {
-      role: 'user',
-      content: text,
-      timestamp: new Date().toISOString(),
-    }
-
-    setMessages(prev => [...prev, userMessage])
-    setLoading(true)
-
-    try {
-      const contextMessages = await buildChatContext(text, settings)
-      const allMessages = [...contextMessages, userMessage]
-      const response = await chatCompletion(allMessages, settings.model_main, 0.7)
-
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: response,
-        timestamp: new Date().toISOString(),
-      }
-
-      setMessages(prev => [...prev, assistantMessage])
-
-      const allSessionMessages = [...contextMessages.filter(m => m.role !== 'system'), userMessage, assistantMessage]
-      setProcessing(true)
-      await saveAndProcessSession(allSessionMessages, settings)
-      setProcessing(false)
-    } catch (err) {
-      const errorMessage: Message = {
-        role: 'assistant',
-        content: 'Ошибка: ' + (err instanceof Error ? err.message : 'Не удалось получить ответ. Проверь API ключ.'),
-        timestamp: new Date().toISOString(),
-      }
-      setMessages(prev => [...prev, errorMessage])
-    } finally {
-      setLoading(false)
-    }
-  }, [loading, settings])
-
-  if (messages.length === 0) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-6">
-        <div className="max-w-md text-center space-y-6">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Loop</h1>
-            <p className="text-[var(--text-muted)] text-sm">
-              Прямой AI-психолог. Без подхалимства. Без смягчений.
-            </p>
-          </div>
-
-          {loading ? (
-            <div className="flex justify-center">
-              <div className="bg-[var(--bg-secondary)] rounded-2xl px-6 py-4">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <span className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <p className="text-xs text-[var(--text-muted)]">Нажми чтобы начать:</p>
-              {[
-                'Мне не хочется выходить на стрим',
-                'Я опять взяла выходной и чувствую себя дерьмово',
-                'Я заметила что избегаю работу уже третий день подряд',
-                'Мне тревожно, но я не понимаю почему',
-              ].map(text => (
-                <button
-                  key={text}
-                  onClick={() => handleQuickStart(text)}
-                  disabled={loading}
-                  className="w-full text-left bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {text}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="h-full flex flex-col">
+      {messages.length > 0 && (
+        <div className="border-b border-[var(--border)] px-4 py-2 flex justify-between items-center">
+          <span className="text-xs text-[var(--text-muted)]">
+            {messages.filter(m => m.role === 'user').length} сообщений в этой сессии
+          </span>
+          <button
+            onClick={handleNewSession}
+            disabled={processing}
+            className="text-xs bg-[var(--accent)] hover:bg-[var(--accent-dim)] disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors"
+          >
+            {processing ? 'Сохраняю...' : 'Новая сессия'}
+          </button>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <p className="text-[var(--text-muted)] text-sm mb-1">Начни диалог</p>
+            <p className="text-xs text-[var(--text-muted)]">Напиши что происходит — без фильтров</p>
+          </div>
+        )}
+
         {messages.filter(m => m.role !== 'system').map((msg, i) => (
           <div
             key={i}
@@ -178,7 +127,13 @@ export default function Chat({ settings }: ChatProps) {
               <p className={`text-xs mt-1 ${
                 msg.role === 'user' ? 'text-white/60' : 'text-[var(--text-muted)]'
               }`}>
-                {new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                {new Date(msg.timestamp).toLocaleString('ru-RU', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </p>
             </div>
           </div>
@@ -198,7 +153,7 @@ export default function Chat({ settings }: ChatProps) {
 
         {processing && (
           <div className="text-center text-xs text-[var(--text-muted)] py-2">
-            Обновляю память...
+            Сохраняю сессию...
           </div>
         )}
 

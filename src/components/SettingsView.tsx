@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Settings, Profile, Fact, Insight, ExposureStep } from '../types'
+import type { Settings, Profile, Fact, Insight, ExposureStep, Session } from '../types'
 import * as db from '../db'
 import { initGroq } from '../groq/client'
 
@@ -15,25 +15,29 @@ export default function SettingsView({ settings, onSettingsChange }: SettingsPro
   const [facts, setFacts] = useState<Fact[]>([])
   const [insights, setInsights] = useState<Insight[]>([])
   const [exposure, setExposure] = useState<ExposureStep[]>([])
-  const [activeTab, setActiveTab] = useState<'settings' | 'profile' | 'facts' | 'insights' | 'exposure'>('settings')
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [activeTab, setActiveTab] = useState<'settings' | 'profile' | 'facts' | 'insights' | 'exposure' | 'history'>('settings')
   const [exportData, setExportData] = useState('')
   const [showExport, setShowExport] = useState(false)
+  const [expandedSession, setExpandedSession] = useState<string | null>(null)
 
   useEffect(() => {
     loadMemoryData()
   }, [])
 
   async function loadMemoryData() {
-    const [p, f, i, e] = await Promise.all([
+    const [p, f, i, e, s] = await Promise.all([
       db.getProfile(),
       db.getAllFacts(),
       db.getInsights(),
       db.getExposureSteps(),
+      db.getSessions(),
     ])
     setProfile(p)
     setFacts(f)
     setInsights(i)
     setExposure(e)
+    setSessions(s)
   }
 
   async function handleSave() {
@@ -56,6 +60,7 @@ export default function SettingsView({ settings, onSettingsChange }: SettingsPro
       setFacts([])
       setInsights([])
       setExposure([])
+      setSessions([])
     }
   }
 
@@ -76,16 +81,17 @@ export default function SettingsView({ settings, onSettingsChange }: SettingsPro
     { id: 'facts' as const, label: `Факты (${facts.length})` },
     { id: 'insights' as const, label: `Инсайты (${insights.length})` },
     { id: 'exposure' as const, label: `Exposure (${exposure.length})` },
+    { id: 'history' as const, label: `История (${sessions.length})` },
   ]
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex border-b border-[var(--border)]">
+      <div className="flex border-b border-[var(--border)] overflow-x-auto">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-3 text-sm transition-colors ${
+            className={`px-3 py-3 text-sm whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? 'text-[var(--accent)] border-b-2 border-[var(--accent)]'
                 : 'text-[var(--text-muted)] hover:text-[var(--text)]'
@@ -161,7 +167,7 @@ export default function SettingsView({ settings, onSettingsChange }: SettingsPro
             </div>
 
             <div className="text-xs text-[var(--text-muted)] space-y-1">
-              <p>Сессий: {settings.session_count}</p>
+              <p>Завершённых сессий: {settings.session_count}</p>
               <p>Консолидация каждые 5 сессий</p>
             </div>
           </div>
@@ -307,6 +313,71 @@ export default function SettingsView({ settings, onSettingsChange }: SettingsPro
                     <span>Тревога после: {step.anxiety_after}/100</span>
                     <span>Попыток: {step.attempts}</span>
                   </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div className="max-w-2xl space-y-3">
+            {sessions.length === 0 ? (
+              <p className="text-[var(--text-muted)]">Завершённых сессий пока нет.</p>
+            ) : (
+              sessions.map((session, index) => (
+                <div key={session.id} className="bg-[var(--bg-secondary)] rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setExpandedSession(expandedSession === session.id ? null : session.id)}
+                    className="w-full text-left p-4 hover:bg-[var(--bg-tertiary)] transition-colors"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="text-sm font-medium">Сессия #{sessions.length - index}</span>
+                        <span className="text-xs text-[var(--text-muted)] ml-2">
+                          {new Date(session.timestamp).toLocaleDateString('ru-RU', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                      </div>
+                      <span className="text-xs text-[var(--text-muted)]">
+                        {session.messages.length} сообщений · {session.fact_ids_extracted.length} фактов
+                      </span>
+                    </div>
+                    <p className="text-xs text-[var(--text-muted)] mt-1">{session.summary}</p>
+                  </button>
+
+                  {expandedSession === session.id && (
+                    <div className="border-t border-[var(--border)] p-4 space-y-3 max-h-96 overflow-y-auto">
+                      {session.messages.filter(m => m.role !== 'system').map((msg, i) => (
+                        <div
+                          key={i}
+                          className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
+                              msg.role === 'user'
+                                ? 'bg-[var(--accent)]/20 text-[var(--text)] rounded-br-md'
+                                : 'bg-[var(--bg-tertiary)] text-[var(--text)] rounded-bl-md'
+                            }`}
+                          >
+                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                            <p className="text-xs text-[var(--text-muted)] mt-1">
+                              {new Date(msg.timestamp).toLocaleString('ru-RU', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))
             )}
