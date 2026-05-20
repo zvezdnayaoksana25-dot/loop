@@ -72,10 +72,46 @@ export default function Chat({ settings }: ChatProps) {
     }
   }
 
-  const handleQuickStart = (text: string) => {
-    setInput(text)
-    inputRef.current?.focus()
-  }
+  const handleQuickStart = useCallback(async (text: string) => {
+    if (loading) return
+
+    const userMessage: Message = {
+      role: 'user',
+      content: text,
+      timestamp: new Date().toISOString(),
+    }
+
+    setMessages(prev => [...prev, userMessage])
+    setLoading(true)
+
+    try {
+      const contextMessages = await buildChatContext(text, settings)
+      const allMessages = [...contextMessages, userMessage]
+      const response = await chatCompletion(allMessages, settings.model_main, 0.7)
+
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: response,
+        timestamp: new Date().toISOString(),
+      }
+
+      setMessages(prev => [...prev, assistantMessage])
+
+      const allSessionMessages = [...contextMessages.filter(m => m.role !== 'system'), userMessage, assistantMessage]
+      setProcessing(true)
+      await saveAndProcessSession(allSessionMessages, settings)
+      setProcessing(false)
+    } catch (err) {
+      const errorMessage: Message = {
+        role: 'assistant',
+        content: 'Ошибка: ' + (err instanceof Error ? err.message : 'Не удалось получить ответ. Проверь API ключ.'),
+        timestamp: new Date().toISOString(),
+      }
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
+      setLoading(false)
+    }
+  }, [loading, settings])
 
   if (messages.length === 0) {
     return (
@@ -88,23 +124,36 @@ export default function Chat({ settings }: ChatProps) {
             </p>
           </div>
 
-          <div className="space-y-2">
-            <p className="text-xs text-[var(--text-muted)]">Быстрый старт:</p>
-            {[
-              'Мне не хочется выходить на стрим',
-              'Я опять взяла выходной и чувствую себя дерьмово',
-              'Я заметила что избегаю работу уже третий день подряд',
-              'Мне тревожно, но я не понимаю почему',
-            ].map(text => (
-              <button
-                key={text}
-                onClick={() => handleQuickStart(text)}
-                className="w-full text-left bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm transition-colors"
-              >
-                {text}
-              </button>
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center">
+              <div className="bg-[var(--bg-secondary)] rounded-2xl px-6 py-4">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <span className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <span className="w-2 h-2 bg-[var(--text-muted)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs text-[var(--text-muted)]">Нажми чтобы начать:</p>
+              {[
+                'Мне не хочется выходить на стрим',
+                'Я опять взяла выходной и чувствую себя дерьмово',
+                'Я заметила что избегаю работу уже третий день подряд',
+                'Мне тревожно, но я не понимаю почему',
+              ].map(text => (
+                <button
+                  key={text}
+                  onClick={() => handleQuickStart(text)}
+                  disabled={loading}
+                  className="w-full text-left bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border)] rounded-lg px-4 py-3 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {text}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     )
