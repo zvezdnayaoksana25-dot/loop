@@ -31,8 +31,16 @@ export function AppLayout({
   const [showSettings, setShowSettings] = useState(false);
 
   return (
-    <div className="h-full w-full flex flex-col bg-[var(--bg-primary)]">
-      <div className="flex-1 overflow-hidden">
+    <div
+      className="w-full flex flex-col bg-[var(--bg-primary)]"
+      style={{
+        height: '100dvh',
+        paddingTop: 'var(--sat)',
+        paddingLeft: 'var(--sal)',
+        paddingRight: 'var(--sar)',
+      }}
+    >
+      <div className="flex-1 overflow-hidden min-h-0">
         {activeTab === 'chat' ? (
           <ChatScreen
             apiKey={apiKey}
@@ -47,33 +55,41 @@ export function AppLayout({
         )}
       </div>
 
-      <nav className="flex border-t border-[var(--border)] bg-[var(--bg-secondary)]/80 backdrop-blur-xl" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav
+        className="flex shrink-0 border-t border-[var(--border)] bg-[var(--bg-secondary)]/90 backdrop-blur-xl"
+        style={{
+          paddingBottom: 'calc(var(--sab) + 8px)',
+          paddingTop: '8px',
+        }}
+      >
         <button
           onClick={() => setActiveTab('chat')}
-          className={`flex-1 flex flex-col items-center justify-center py-3 transition-colors duration-150 ${
-            activeTab === 'chat'
-              ? 'text-[var(--accent)]'
-              : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-          }`}
+          className="relative flex-1 flex flex-col items-center justify-center py-2 transition-colors duration-150"
         >
-          <MessageSquare size={22} />
-          <span className="text-xs mt-1 font-medium">Chat</span>
+          <MessageSquare size={22} color={activeTab === 'chat' ? 'var(--accent)' : 'var(--text-tertiary)'} />
+          <span
+            className="text-xs mt-0.5 font-medium"
+            style={{ color: activeTab === 'chat' ? 'var(--accent)' : 'var(--text-tertiary)' }}
+          >
+            Chat
+          </span>
           {activeTab === 'chat' && (
-            <div className="absolute bottom-0 w-12 h-0.5 bg-[var(--accent)] rounded-full" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[var(--accent)] rounded-full" />
           )}
         </button>
         <button
           onClick={() => setActiveTab('memory')}
-          className={`flex-1 flex flex-col items-center justify-center py-3 transition-colors duration-150 ${
-            activeTab === 'memory'
-              ? 'text-[var(--accent)]'
-              : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-          }`}
+          className="relative flex-1 flex flex-col items-center justify-center py-2 transition-colors duration-150"
         >
-          <Brain size={22} />
-          <span className="text-xs mt-1 font-medium">Memory</span>
+          <Brain size={22} color={activeTab === 'memory' ? 'var(--accent)' : 'var(--text-tertiary)'} />
+          <span
+            className="text-xs mt-0.5 font-medium"
+            style={{ color: activeTab === 'memory' ? 'var(--accent)' : 'var(--text-tertiary)' }}
+          >
+            Memory
+          </span>
           {activeTab === 'memory' && (
-            <div className="absolute bottom-0 w-12 h-0.5 bg-[var(--accent)] rounded-full" />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[var(--accent)] rounded-full" />
           )}
         </button>
       </nav>

@@ -41,17 +41,17 @@ function App() {
 
   if (!isLoaded) {
     return (
-      <div className="h-full w-full flex items-center justify-center bg-[var(--bg-primary)]">
+      <div className="h-full w-full flex items-center justify-center bg-[var(--bg-primary)]" style={{ height: '100dvh' }}>
         <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse-slow">🧠</div>
-          <p className="text-sm text-[var(--text-secondary)]">Loading Second Brain...</p>
+          <div className="text-4xl mb-3 animate-pulse-slow">🧠</div>
+          <p className="text-sm text-[var(--text-secondary)]">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="w-full flex flex-col" style={{ height: '100dvh' }}>
       {showBackupBanner && daysSinceBackup && (
         <BackupBanner
           daysSinceBackup={daysSinceBackup}
@@ -59,7 +59,7 @@ function App() {
         />
       )}
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden min-h-0">
         <AppLayout
           apiKey={settings.groqApiKey as string}
           chatModel={settings.chatModel as string}

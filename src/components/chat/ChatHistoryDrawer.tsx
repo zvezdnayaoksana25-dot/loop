@@ -52,43 +52,42 @@ export function ChatHistoryDrawer({
       />
       <div
         className="fixed top-0 left-0 bottom-0 w-[85%] max-w-sm bg-[var(--bg-secondary)] z-50 animate-slide-in-left flex flex-col"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--border)]">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Chat History</h2>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] shrink-0">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">Chats</h2>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)]">
-            <X size={20} color="var(--text-primary)" />
+            <X size={18} color="var(--text-primary)" />
           </button>
         </div>
 
-        <div className="px-4 py-3">
+        <div className="px-4 py-2 shrink-0">
           <input
             type="text"
-            placeholder="Search chats..."
+            placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full px-3 py-2 bg-[var(--bg-tertiary)] rounded-lg text-sm text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)]"
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <div className="flex-1 overflow-y-auto px-4 pb-4" style={{ WebkitOverflowScrolling: 'touch' }}>
           {Object.entries(grouped).map(([group, groupChats]) => (
-            <div key={group} className="mb-4">
-              <p className="text-xs text-[var(--text-secondary)] font-medium mb-2 uppercase tracking-wide">
+            <div key={group} className="mb-3">
+              <p className="text-xs text-[var(--text-secondary)] font-medium mb-1.5 uppercase tracking-wide">
                 {group}
               </p>
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {groupChats.map((chat) => (
                   <div
                     key={chat.id}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
                       chat.id === currentChatId
-                        ? 'bg-[var(--bg-tertiary)] border-l-2 border-[var(--accent)]'
+                        ? 'bg-[var(--bg-tertiary)]'
                         : 'hover:bg-[var(--bg-tertiary)]/50'
                     }`}
                     onClick={() => chat.id && onSelect(chat.id)}
                   >
-                    <MessageSquare size={16} color="var(--text-secondary)" className="shrink-0" />
+                    <MessageSquare size={14} color="var(--text-secondary)" className="shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-[var(--text-primary)] truncate">{chat.title}</p>
                       <p className="text-xs text-[var(--text-tertiary)]">
@@ -101,9 +100,9 @@ export function ChatHistoryDrawer({
                           e.stopPropagation();
                           onDelete(chat.id!);
                         }}
-                        className="p-1 rounded hover:bg-[var(--bg-elevated)] opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded shrink-0"
                       >
-                        <Trash2 size={14} color="var(--error)" />
+                        <Trash2 size={12} color="var(--error)" />
                       </button>
                     )}
                   </div>
@@ -114,18 +113,18 @@ export function ChatHistoryDrawer({
 
           {filtered.length === 0 && (
             <div className="text-center py-8">
-              <MessageSquare size={32} color="var(--text-tertiary)" className="mx-auto mb-2" />
+              <MessageSquare size={28} color="var(--text-tertiary)" className="mx-auto mb-2" />
               <p className="text-sm text-[var(--text-tertiary)]">No chats yet</p>
             </div>
           )}
         </div>
 
-        <div className="px-4 py-3 border-t border-[var(--border)]">
+        <div className="px-4 py-3 border-t border-[var(--border)] shrink-0">
           <button
             onClick={onNew}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--accent)] rounded-lg text-sm font-medium text-white hover:bg-[var(--accent-hover)] transition-colors"
           >
-            <Plus size={16} />
+            <Plus size={14} />
             New Chat
           </button>
         </div>

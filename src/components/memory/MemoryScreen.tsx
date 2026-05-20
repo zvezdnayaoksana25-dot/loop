@@ -13,12 +13,10 @@ export function MemoryScreen() {
     selectedMemory,
     searchQuery,
     activeDomain,
-    activeType,
     viewMode,
     totalCount,
     setSearchQuery,
     setActiveDomain,
-    setActiveType,
     setViewMode,
     loadMemories,
     editMemory,
@@ -33,8 +31,8 @@ export function MemoryScreen() {
 
   return (
     <div className="h-full flex flex-col bg-[var(--bg-primary)]">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
-        <h1 className="text-lg font-semibold text-[var(--text-primary)]">Memory</h1>
+      <header className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--border)] shrink-0">
+        <h1 className="text-base font-semibold text-[var(--text-primary)]">Memory</h1>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setViewMode('list')}
@@ -44,7 +42,7 @@ export function MemoryScreen() {
                 : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)]'
             }`}
           >
-            <List size={18} />
+            <List size={16} />
           </button>
           <button
             onClick={() => setViewMode('graph')}
@@ -54,26 +52,24 @@ export function MemoryScreen() {
                 : 'text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)]'
             }`}
           >
-            <Network size={18} />
+            <Network size={16} />
           </button>
         </div>
       </header>
 
-      <div className="px-4 py-3 space-y-3">
+      <div className="px-4 py-2 space-y-2 shrink-0">
         <MemorySearch value={searchQuery} onChange={setSearchQuery} />
         <DomainFilter
           activeDomain={activeDomain}
-          activeType={activeType}
           onDomainChange={setActiveDomain}
-          onTypeChange={setActiveType}
         />
         <p className="text-xs text-[var(--text-tertiary)]">
-          {totalCount} memories total
+          {totalCount} memories
           {memories.length !== totalCount && ` · ${memories.length} shown`}
         </p>
       </div>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden min-h-0">
         {viewMode === 'list' ? (
           <MemoryList
             memories={memories}

@@ -23,14 +23,12 @@ export function MemoryCard({ memory, onClick }: MemoryCardProps) {
       className="w-full text-left p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--border-active)] transition-all"
     >
       <div className="flex items-start gap-2">
-        <span className="text-base mt-0.5">{typeIcon}</span>
+        <span className="text-sm mt-0.5">{typeIcon}</span>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-sm font-medium text-[var(--text-primary)] truncate">
-              {memory.title}
-            </h3>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mb-2">
+          <h3 className="text-sm font-medium text-[var(--text-primary)] truncate">
+            {memory.title}
+          </h3>
+          <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mt-0.5 mb-1.5">
             {memory.content}
           </p>
           <div className="flex items-center gap-2 flex-wrap">
@@ -47,20 +45,18 @@ export function MemoryCard({ memory, onClick }: MemoryCardProps) {
               {memory.type}
             </span>
             {memory.tags.length > 0 && (
-              <span className="text-xs text-[var(--accent)]">
-                {memory.tags.slice(0, 2).map((t) => `#${t}`).join(' ')}
-                {memory.tags.length > 2 && ` +${memory.tags.length - 2}`}
+              <span className="text-xs text-[var(--accent)] truncate">
+                {memory.tags.slice(0, 3).map((t) => `#${t}`).join(' ')}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 mt-2">
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-[var(--text-tertiary)]">importance:</span>
+          <div className="flex items-center gap-2 mt-1.5">
+            <div className="flex items-center gap-0.5">
               <div className="flex gap-0.5">
                 {Array.from({ length: 10 }).map((_, i) => (
                   <div
                     key={i}
-                    className="w-1.5 h-2 rounded-sm"
+                    className="w-1.5 h-1.5 rounded-sm"
                     style={{
                       backgroundColor:
                         i < memory.importance
@@ -70,9 +66,6 @@ export function MemoryCard({ memory, onClick }: MemoryCardProps) {
                   />
                 ))}
               </div>
-              <span className="text-xs text-[var(--text-tertiary)] ml-1">
-                {memory.importance}
-              </span>
             </div>
             <span className="text-xs text-[var(--text-tertiary)]">
               {formatTimestamp(new Date(memory.updatedAt))}

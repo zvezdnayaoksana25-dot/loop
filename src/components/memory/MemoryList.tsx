@@ -12,7 +12,7 @@ export function MemoryList({ memories, onSelect }: MemoryListProps) {
       <div className="h-full flex items-center justify-center px-6">
         <div className="text-center">
           <div className="text-4xl mb-4">📝</div>
-          <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">No memories yet</h3>
+          <h3 className="text-base font-medium text-[var(--text-primary)] mb-2">No memories yet</h3>
           <p className="text-sm text-[var(--text-secondary)]">
             Start chatting and I'll automatically build your knowledge base.
           </p>
@@ -22,7 +22,10 @@ export function MemoryList({ memories, onSelect }: MemoryListProps) {
   }
 
   return (
-    <div className="h-full overflow-y-auto px-4 pb-4 space-y-2">
+    <div
+      className="h-full overflow-y-auto px-4 pb-4 space-y-2"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       {memories.map((memory) => (
         <MemoryCard
           key={memory.id}

@@ -1,39 +1,73 @@
-# Second Brain — AI Agent PWA
+# React + TypeScript + Vite
 
-Your personal AI assistant that remembers everything. A "second brain" that runs entirely in the browser.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Features
+Currently, two official plugins are available:
 
-- **Persistent Memory** — Automatically extracts and stores facts, events, preferences from conversations
-- **3-Layer Memory** — Episodic (events), Semantic (facts), Procedural (patterns)
-- **8 Life Domains** — Work, Learning, Health, Personal, Finance, Goals, Tech, General
-- **Memory Graph** — Visualize connections between memories
-- **Auto-Merge** — Agent automatically consolidates similar memories
-- **Insight Analysis** — Cross-domain pattern detection
-- **Backup & Export** — JSON export, Markdown export (Obsidian-compatible)
-- **PWA** — Installable on iPhone, works offline
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Tech Stack
+## React Compiler
 
-- Vite + React 19 + TypeScript
-- Tailwind CSS v4
-- Dexie.js (IndexedDB)
-- Groq API (Llama 3.3 70B)
-- react-force-graph-2d
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Setup
+## Expanding the ESLint configuration
 
-1. Get a free Groq API key at [console.groq.com](https://console.groq.com)
-2. Open the app → Settings (⚙️) → paste your API key
-3. Start chatting — the agent builds your knowledge base automatically
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-## Local Development
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
-```bash
-npm install
-npm run dev
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-## Deploy
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-Push to `main` branch — GitHub Actions auto-deploys to GitHub Pages.
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```

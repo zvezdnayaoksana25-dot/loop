@@ -9,13 +9,11 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   if (message.role === 'user') {
     return (
       <div className="flex justify-end animate-fade-in">
-        <div className="max-w-[80%]">
-          <div
-            className="px-4 py-3 rounded-2xl rounded-tr-md bg-[var(--bubble-user)] text-white"
-          >
+        <div className="max-w-[85%]">
+          <div className="px-3 py-2 rounded-2xl rounded-tr-sm bg-[var(--bubble-user)] text-white">
             <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
           </div>
-          <p className="text-xs text-[var(--text-tertiary)] text-right mt-1">
+          <p className="text-xs text-[var(--text-tertiary)] text-right mt-0.5">
             {formatTime(new Date(message.timestamp))}
           </p>
         </div>
@@ -30,12 +28,12 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   return (
     <div className="animate-fade-in">
       <div className="max-w-[90%]">
-        <div className="px-1 py-1">
-          <p className="text-[var(--text-primary)] text-sm leading-relaxed whitespace-pre-wrap">
+        <div className="px-1 py-0.5">
+          <p className="text-sm text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap">
             {message.content}
           </p>
         </div>
-        <p className="text-xs text-[var(--text-tertiary)] mt-1">
+        <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
           {formatTime(new Date(message.timestamp))}
         </p>
       </div>

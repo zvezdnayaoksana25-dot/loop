@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Trash2, Save } from 'lucide-react';
-import type { Memory, MemoryDomain, MemoryType } from '../../types';
+import type { Memory, MemoryDomain } from '../../types';
 import { formatFullTimestamp } from '../../utils/time';
 import { DOMAIN_COLORS, DOMAIN_LABELS } from '../../utils/constants';
 
@@ -16,7 +16,6 @@ export function MemoryEditor({ memory, onSave, onDelete, onClose }: MemoryEditor
   const [content, setContent] = useState(memory.content);
   const [importance, setImportance] = useState(memory.importance);
   const [tags, setTags] = useState(memory.tags.join(', '));
-  const [showContradictions, setShowContradictions] = useState(false);
 
   const handleSave = () => {
     onSave({
@@ -32,50 +31,49 @@ export function MemoryEditor({ memory, onSave, onDelete, onClose }: MemoryEditor
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 z-40 animate-fade-in" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/60 z-40 animate-fade-in" onClick={onClose} />
       <div
-        className="fixed bottom-0 left-0 right-0 bg-[var(--bg-secondary)] rounded-t-2xl z-50 animate-slide-up max-h-[85vh] overflow-y-auto"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="fixed inset-x-3 bottom-3 top-3 bg-[var(--bg-secondary)] rounded-2xl z-50 animate-slide-up overflow-hidden flex flex-col"
       >
-        <div className="sticky top-0 bg-[var(--bg-secondary)] px-4 py-4 border-b border-[var(--border)] flex items-center justify-between z-10">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Edit Memory</h2>
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] shrink-0">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">Edit Memory</h2>
+          <div className="flex items-center gap-1">
             <button
               onClick={onDelete}
               className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
             >
-              <Trash2 size={18} color="var(--error)" />
+              <Trash2 size={16} color="var(--error)" />
             </button>
             <button
               onClick={handleSave}
               className="p-2 rounded-lg bg-[var(--accent)] hover:bg-[var(--accent-hover)] transition-colors"
             >
-              <Save size={18} color="white" />
+              <Save size={16} color="white" />
             </button>
             <button
               onClick={onClose}
               className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
             >
-              <X size={18} color="var(--text-primary)" />
+              <X size={16} color="var(--text-primary)" />
             </button>
           </div>
         </div>
 
-        <div className="px-4 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3" style={{ WebkitOverflowScrolling: 'touch' }}>
           <div>
             <label className="text-xs text-[var(--text-secondary)] font-medium mb-1 block">Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 bg-transparent border-b border-[var(--border)] text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent)]"
+              className="w-full px-3 py-2 bg-[var(--bg-tertiary)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:ring-1 focus:ring-[var(--accent)]"
             />
           </div>
 
           <div>
-            <label className="text-xs text-[var(--text-secondary)] font-medium mb-2 block">Type</label>
+            <label className="text-xs text-[var(--text-secondary)] font-medium mb-1.5 block">Type</label>
             <div className="flex gap-2">
-              {(['episodic', 'semantic', 'procedural'] as MemoryType[]).map((type) => (
+              {(['episodic', 'semantic', 'procedural'] as const).map((type) => (
                 <button
                   key={type}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
@@ -91,15 +89,13 @@ export function MemoryEditor({ memory, onSave, onDelete, onClose }: MemoryEditor
           </div>
 
           <div>
-            <label className="text-xs text-[var(--text-secondary)] font-medium mb-2 block">Domain</label>
-            <div className="flex flex-wrap gap-2">
+            <label className="text-xs text-[var(--text-secondary)] font-medium mb-1.5 block">Domain</label>
+            <div className="flex flex-wrap gap-1.5">
               {(Object.keys(DOMAIN_LABELS) as MemoryDomain[]).map((domain) => (
                 <button
                   key={domain}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    memory.domain === domain
-                      ? 'text-white'
-                      : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]'
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                    memory.domain === domain ? 'text-white' : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]'
                   }`}
                   style={memory.domain === domain ? { backgroundColor: domainColor } : {}}
                 >
@@ -115,12 +111,12 @@ export function MemoryEditor({ memory, onSave, onDelete, onClose }: MemoryEditor
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 bg-transparent border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent)] resize-none"
+              className="w-full px-3 py-2 bg-[var(--bg-tertiary)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:ring-1 focus:ring-[var(--accent)] resize-none"
             />
           </div>
 
           <div>
-            <label className="text-xs text-[var(--text-secondary)] font-medium mb-2 block">
+            <label className="text-xs text-[var(--text-secondary)] font-medium mb-1 block">
               Importance: {importance}
             </label>
             <input
@@ -144,11 +140,11 @@ export function MemoryEditor({ memory, onSave, onDelete, onClose }: MemoryEditor
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="#tag1, #tag2"
-              className="w-full px-3 py-2 bg-transparent border border-[var(--border)] rounded-lg text-[var(--text-primary)] text-sm outline-none focus:border-[var(--accent)] placeholder:text-[var(--text-tertiary)]"
+              className="w-full px-3 py-2 bg-[var(--bg-tertiary)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:ring-1 focus:ring-[var(--accent)] placeholder:text-[var(--text-tertiary)]"
             />
           </div>
 
-          <div className="border-t border-[var(--border)] pt-4 space-y-2">
+          <div className="border-t border-[var(--border)] pt-3 space-y-1.5">
             <div className="flex justify-between text-xs">
               <span className="text-[var(--text-tertiary)]">Created</span>
               <span className="text-[var(--text-secondary)]">
@@ -174,30 +170,6 @@ export function MemoryEditor({ memory, onSave, onDelete, onClose }: MemoryEditor
               </div>
             )}
           </div>
-
-          {memory.contradictionHistory.length > 0 && (
-            <div className="border-t border-[var(--border)] pt-4">
-              <button
-                onClick={() => setShowContradictions(!showContradictions)}
-                className="text-xs text-[var(--warning)] font-medium"
-              >
-                Contradiction History ({memory.contradictionHistory.length})
-              </button>
-              {showContradictions && (
-                <div className="mt-2 space-y-2">
-                  {memory.contradictionHistory.map((c, i) => (
-                    <div key={i} className="text-xs space-y-1">
-                      <p className="text-[var(--error)] line-through">{c.oldContent}</p>
-                      <p className="text-[var(--success)]">{c.newContent}</p>
-                      <p className="text-[var(--text-tertiary)]">
-                        Resolved: {formatFullTimestamp(new Date(c.resolvedAt))}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </>

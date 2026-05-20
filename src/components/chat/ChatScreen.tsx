@@ -119,14 +119,14 @@ export function ChatScreen({
 
   return (
     <div className="h-full flex flex-col">
-      <header className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-primary)]">
+      <header className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-primary)] shrink-0">
         <button
           onClick={() => setShowHistory(true)}
           className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
         >
           <Menu size={20} color="var(--text-primary)" />
         </button>
-        <h1 className="text-lg font-semibold text-[var(--text-primary)]">Second Brain</h1>
+        <h1 className="text-base font-semibold text-[var(--text-primary)]">Second Brain</h1>
         <button
           onClick={onOpenSettings}
           className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)] transition-colors"
@@ -135,7 +135,7 @@ export function ChatScreen({
         </button>
       </header>
 
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden min-h-0">
         <MessageList
           messages={localMessages}
           streamingContent={streamingText}
@@ -144,7 +144,7 @@ export function ChatScreen({
         />
       </div>
 
-      <div className="px-4 pb-2 bg-[var(--bg-primary)]">
+      <div className="px-3 pb-2 pt-1 bg-[var(--bg-primary)] shrink-0">
         <ChatInput
           onSend={handleSend}
           onAnalyze={handleAnalyze}

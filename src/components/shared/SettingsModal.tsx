@@ -69,19 +69,19 @@ export function SettingsModal({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 z-40 animate-fade-in" onClick={onClose} />
-      <div className="fixed inset-4 sm:inset-10 bg-[var(--bg-primary)] rounded-2xl z-50 overflow-hidden flex flex-col animate-fade-in">
-        <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--border)]">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">Settings</h2>
+      <div className="fixed inset-0 bg-black/60 z-40 animate-fade-in" onClick={onClose} />
+      <div className="fixed inset-x-3 bottom-3 top-3 bg-[var(--bg-primary)] rounded-2xl z-50 overflow-hidden flex flex-col animate-fade-in">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] shrink-0">
+          <h2 className="text-base font-semibold text-[var(--text-primary)]">Settings</h2>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-[var(--bg-tertiary)]">
-            <X size={20} color="var(--text-primary)" />
+            <X size={18} color="var(--text-primary)" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
           {/* API Key */}
           <section>
-            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-2">Groq API Key</h3>
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1.5">Groq API Key</h3>
             <div className="flex gap-2">
               <div className="flex-1 relative">
                 <input
@@ -89,53 +89,53 @@ export function SettingsModal({
                   value={keyInput}
                   onChange={(e) => setKeyInput(e.target.value)}
                   placeholder="gsk_..."
-                  className="w-full px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] font-mono outline-none focus:border-[var(--accent)] placeholder:text-[var(--text-tertiary)] pr-10"
+                  className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] font-mono outline-none focus:border-[var(--accent)] placeholder:text-[var(--text-tertiary)] pr-10"
                 />
                 <button
                   onClick={() => setShowKey(!showKey)}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                 >
-                  {showKey ? <EyeOff size={16} color="var(--text-tertiary)" /> : <Eye size={16} color="var(--text-tertiary)" />}
+                  {showKey ? <EyeOff size={14} color="var(--text-tertiary)" /> : <Eye size={14} color="var(--text-tertiary)" />}
                 </button>
               </div>
               <button
                 onClick={handleSaveKey}
-                className="px-4 py-2.5 bg-[var(--accent)] rounded-lg text-sm font-medium text-white hover:bg-[var(--accent-hover)] transition-colors"
+                className="px-3 py-2 bg-[var(--accent)] rounded-lg text-sm font-medium text-white hover:bg-[var(--accent-hover)] transition-colors shrink-0"
               >
                 Save
               </button>
             </div>
             <p className="text-xs text-[var(--text-tertiary)] mt-1">
-              Free tier: 30 RPM / 6K TPM / 14,400 RPD
+              Free tier: 30 RPM / 6K TPM
             </p>
           </section>
 
           {/* Models */}
           <section>
-            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-2">Chat Model</h3>
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1.5">Chat Model</h3>
             <select
               value={chatModel}
               onChange={(e) => onUpdateSetting('chatModel', e.target.value)}
-              className="w-full px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+              className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
             >
               {MODELS.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.name} — {m.description}
+                  {m.name}
                 </option>
               ))}
             </select>
           </section>
 
           <section>
-            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-2">Extraction Model</h3>
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1.5">Extraction Model</h3>
             <select
               value={extractionModel}
               onChange={(e) => onUpdateSetting('extractionModel', e.target.value)}
-              className="w-full px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+              className="w-full px-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
             >
-              {MODELS.filter((m) => m.id.includes('8b') || m.id.includes('mini')).map((m) => (
+              {MODELS.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.name} — {m.description}
+                  {m.name}
                 </option>
               ))}
             </select>
@@ -143,7 +143,7 @@ export function SettingsModal({
 
           {/* Temperature */}
           <section>
-            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-2">
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
               Temperature: {temperature.toFixed(1)}
             </h3>
             <input
@@ -162,17 +162,17 @@ export function SettingsModal({
           </section>
 
           {/* Toggles */}
-          <section className="space-y-3">
+          <section className="space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-sm text-[var(--text-primary)]">Auto Memory Extraction</span>
               <button
                 onClick={() => onUpdateSetting('autoMemoryExtraction', !autoMemoryExtraction)}
-                className={`w-12 h-7 rounded-full transition-colors relative ${
+                className={`w-11 h-6 rounded-full transition-colors relative ${
                   autoMemoryExtraction ? 'bg-[var(--accent)]' : 'bg-[var(--bg-tertiary)]'
                 }`}
               >
                 <div
-                  className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform ${
+                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
                     autoMemoryExtraction ? 'translate-x-5' : 'translate-x-0.5'
                   }`}
                 />
@@ -182,12 +182,12 @@ export function SettingsModal({
               <span className="text-sm text-[var(--text-primary)]">Auto Consolidation</span>
               <button
                 onClick={() => onUpdateSetting('autoConsolidation', !autoConsolidation)}
-                className={`w-12 h-7 rounded-full transition-colors relative ${
+                className={`w-11 h-6 rounded-full transition-colors relative ${
                   autoConsolidation ? 'bg-[var(--accent)]' : 'bg-[var(--bg-tertiary)]'
                 }`}
               >
                 <div
-                  className={`absolute top-0.5 w-6 h-6 rounded-full bg-white transition-transform ${
+                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform ${
                     autoConsolidation ? 'translate-x-5' : 'translate-x-0.5'
                   }`}
                 />
@@ -197,8 +197,8 @@ export function SettingsModal({
 
           {/* Insight Frequency */}
           <section>
-            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-2">
-              Insight Analysis: Every {insightFrequency} messages
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-1">
+              Insights: every {insightFrequency} msgs
             </h3>
             <input
               type="range"
@@ -213,20 +213,19 @@ export function SettingsModal({
 
           {/* Backup */}
           <section>
-            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-3">Backup & Export</h3>
-            <div className="space-y-2">
+            <h3 className="text-sm font-medium text-[var(--text-primary)] mb-2">Backup</h3>
+            <div className="space-y-1.5">
               <button
                 onClick={handleExport}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
               >
-                <Download size={16} color="var(--accent)" />
-                Export to JSON
+                <Download size={14} color="var(--accent)" />
+                Export JSON
               </button>
-              <label className="w-full flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer">
-                <Upload size={16} color="var(--info)" />
-                Import from JSON
+              <label className="w-full flex items-center gap-2 px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors cursor-pointer">
+                <Upload size={14} color="var(--info)" />
+                Import JSON
                 <input
-                  key={Date.now()}
                   type="file"
                   accept=".json"
                   onChange={handleImport}
@@ -235,30 +234,32 @@ export function SettingsModal({
               </label>
               <button
                 onClick={handleExportMarkdown}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg text-sm text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
               >
-                <FileText size={16} color="var(--success)" />
-                Export as Markdown (Obsidian)
+                <FileText size={14} color="var(--success)" />
+                Export Markdown
               </button>
             </div>
             {daysSinceBackup !== null && (
               <p className="text-xs text-[var(--text-tertiary)] mt-2">
-                Last backup: {daysSinceBackup === 0 ? 'Today' : `${daysSinceBackup} days ago`}
+                Last backup: {daysSinceBackup === 0 ? 'Today' : `${daysSinceBackup}d ago`}
               </p>
             )}
           </section>
 
           {/* Danger Zone */}
           <section>
-            <h3 className="text-sm font-medium text-[var(--error)] mb-3">Danger Zone</h3>
+            <h3 className="text-sm font-medium text-[var(--error)] mb-2">Danger Zone</h3>
             <button
               onClick={handleClearChats}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-[var(--bg-secondary)] border border-[var(--error)]/30 rounded-lg text-sm text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--error)]/30 rounded-lg text-sm text-[var(--error)] hover:bg-[var(--error)]/10 transition-colors"
             >
-              <Trash2 size={16} />
+              <Trash2 size={14} />
               Clear All Chats
             </button>
           </section>
+
+          <div className="h-4" />
         </div>
       </div>
     </>

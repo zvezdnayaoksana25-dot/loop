@@ -25,7 +25,7 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
       <div className="h-full flex items-center justify-center px-6">
         <div className="text-center">
           <div className="text-4xl mb-4">🧠</div>
-          <h2 className="text-xl font-semibold text-[var(--text-primary)] mb-2">Your Second Brain</h2>
+          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">Your Second Brain</h2>
           <p className="text-[var(--text-secondary)] text-sm max-w-xs">
             I remember everything you tell me. Start a conversation and I'll build your knowledge base.
           </p>
@@ -35,7 +35,11 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
   }
 
   return (
-    <div ref={containerRef} className="h-full overflow-y-auto px-4 py-4 space-y-4">
+    <div
+      ref={containerRef}
+      className="h-full overflow-y-auto px-4 py-3 space-y-3"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       {messages.map((msg, i) => (
         <MessageBubble key={i} message={msg} />
       ))}
@@ -46,9 +50,9 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
 
       {streamingContent && (
         <div className="animate-fade-in">
-          <div className="text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap">
+          <div className="text-[var(--text-primary)] leading-relaxed whitespace-pre-wrap text-sm">
             {streamingContent}
-            <span className="inline-block w-0.5 h-5 bg-[var(--accent)] ml-0.5 animate-pulse" />
+            <span className="inline-block w-0.5 h-4 bg-[var(--accent)] ml-0.5 animate-pulse" />
           </div>
         </div>
       )}
@@ -57,7 +61,7 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
         <TypingIndicator />
       )}
 
-      <div className="h-4" />
+      <div className="h-2" />
     </div>
   );
 }
