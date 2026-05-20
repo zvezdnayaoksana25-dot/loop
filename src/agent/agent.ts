@@ -87,7 +87,7 @@ export async function runAgent(
       onChunk
     );
 
-    const finalContent = followUpResponse.choices[0]?.message?.content || '';
+    const finalContent = followUpResponse.choices[0]?.message?.content ?? '';
 
     const lastUserMessage = messages.filter((m) => m.role === 'user').pop();
     if (lastUserMessage) {

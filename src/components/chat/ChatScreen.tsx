@@ -56,27 +56,36 @@ export function ChatScreen({
     const allMessages = [...(currentChat?.messages || []), userMessage];
 
     let accumulated = '';
-    const response = await agentSend(
-      apiKey,
-      chatModel,
-      extractionModel,
-      allMessages,
-      temperature,
-      (chunk) => {
-        accumulated += chunk;
-        setPendingMessage({
-          role: 'assistant',
-          content: accumulated,
-          timestamp: new Date(),
-        });
-      }
-    );
+    let responseContent = '';
 
-    const finalContent = response.content || accumulated;
+    try {
+      const response = await agentSend(
+        apiKey,
+        chatModel,
+        extractionModel,
+        allMessages,
+        temperature,
+        (chunk) => {
+          accumulated += chunk;
+          setPendingMessage({
+            role: 'assistant',
+            content: accumulated,
+            timestamp: new Date(),
+          });
+        }
+      );
+
+      responseContent = response.content ?? '';
+    } catch (err) {
+      console.error('Agent error:', err);
+      responseContent = `Error: ${err instanceof Error ? err.message : String(err)}`;
+    }
+
+    const finalContent = responseContent || accumulated || 'Sorry, I could not generate a response.';
 
     const assistantMessage: ChatMessage = {
       role: 'assistant',
-      content: finalContent || 'Sorry, I could not generate a response.',
+      content: finalContent,
       timestamp: new Date(),
     };
 
