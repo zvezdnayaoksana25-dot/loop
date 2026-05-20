@@ -43,30 +43,37 @@ export async function chatCompletion(
   tools?: GroqTool[],
   temperature: number = 0.7
 ): Promise<GroqResponse> {
+  const body = JSON.stringify({
+    model,
+    messages: messages.map((m) => ({
+      role: m.role,
+      content: m.content,
+      ...(m.tool_calls ? { tool_calls: m.tool_calls } : {}),
+      ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
+      ...(m.name ? { name: m.name } : {}),
+    })),
+    tools,
+    temperature,
+  });
+
+  console.log('Groq request:', model, 'messages:', messages.length, 'tools:', tools ? tools.length : 0);
+
   const response = await fetch(GROQ_API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      messages: messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-        ...(m.tool_calls ? { tool_calls: m.tool_calls } : {}),
-        ...(m.tool_call_id ? { tool_call_id: m.tool_call_id } : {}),
-        ...(m.name ? { name: m.name } : {}),
-      })),
-      tools,
-      temperature,
-    }),
+    body,
   });
 
   if (!response.ok) {
     const error = await response.text();
+    console.error('Groq API error:', response.status, error);
     throw new Error(`Groq API error: ${response.status} - ${error}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  console.log('Groq response:', data.choices?.[0]?.message?.role, 'content length:', (data.choices?.[0]?.message?.content || '').length);
+  return data;
 }

@@ -42,6 +42,8 @@ export async function runAgent(
     temperature
   );
 
+  console.log('Agent first response:', JSON.stringify(response.choices[0]?.message, null, 2));
+
   const assistantMessage = response.choices[0]?.message;
   if (!assistantMessage) {
     return { content: 'No response from AI.', toolCalls: [] };
@@ -51,6 +53,7 @@ export async function runAgent(
   const toolCallResults: { name: string; result: string }[] = [];
 
   if (toolCalls && toolCalls.length > 0) {
+    console.log('Agent made tool calls:', toolCalls.length);
     for (const tc of toolCalls) {
       if (onToolCall) onToolCall(tc.function.name);
 
@@ -75,6 +78,7 @@ export async function runAgent(
 
     const followUpMessages = [...apiMessages, { ...assistantMessage, content: assistantMessage.content || '' }, ...toolMessages];
 
+    console.log('Making follow-up call...');
     const followUpResponse = await chatCompletion(
       apiKey,
       chatModel,
@@ -84,6 +88,8 @@ export async function runAgent(
     );
 
     const finalContent = followUpResponse.choices[0]?.message?.content ?? '';
+    console.log('Follow-up content length:', finalContent.length);
+    console.log('Follow-up content:', finalContent.substring(0, 200));
 
     const lastUserMessage = messages.filter((m) => m.role === 'user').pop();
     if (lastUserMessage) {
@@ -100,6 +106,8 @@ export async function runAgent(
 
     return { content: finalContent, toolCalls: toolCallResults };
   }
+
+  console.log('No tool calls, returning direct content:', (assistantMessage.content || '').substring(0, 200));
 
   const lastUserMessage = messages.filter((m) => m.role === 'user').pop();
   if (lastUserMessage) {
