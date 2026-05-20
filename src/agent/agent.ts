@@ -32,8 +32,6 @@ export async function runAgent(
     })),
   ];
 
-  console.log('Groq request:', chatModel, 'messages:', apiMessages.length);
-
   const response = await chatCompletion(
     apiKey,
     chatModel,
@@ -44,11 +42,8 @@ export async function runAgent(
 
   const assistantMessage = response.choices[0]?.message;
   if (!assistantMessage || !assistantMessage.content) {
-    console.error('Empty response from Groq:', JSON.stringify(response));
     return { content: 'No response from AI.', toolCalls: [] };
   }
-
-  console.log('Got content, length:', assistantMessage.content.length);
 
   const lastUserMessage = messages.filter((m) => m.role === 'user').pop();
   if (lastUserMessage) {

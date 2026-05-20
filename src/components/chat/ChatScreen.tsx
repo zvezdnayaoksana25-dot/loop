@@ -55,7 +55,6 @@ export function ChatScreen({
 
     let responseContent = '';
     try {
-      console.log('Sending to agent, messages:', allMessages.length);
       const response = await agentSend(
         apiKey,
         chatModel,
@@ -63,14 +62,10 @@ export function ChatScreen({
         allMessages,
         temperature
       );
-      console.log('Agent response:', JSON.stringify(response, null, 2));
       responseContent = response.content;
     } catch (err) {
-      console.error('Agent error:', err);
       responseContent = `Error: ${err instanceof Error ? err.message : String(err)}`;
     }
-
-    console.log('Final content:', responseContent ? `"${responseContent.substring(0, 100)}..."` : '(empty)');
 
     if (!responseContent) {
       responseContent = 'Sorry, I could not generate a response.';
