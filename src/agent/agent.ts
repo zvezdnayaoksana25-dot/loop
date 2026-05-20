@@ -8,7 +8,6 @@ import type { ChatMessage } from '../types';
 export interface AgentResponse {
   content: string;
   toolCalls: { name: string; result: string }[];
-  streaming?: boolean;
 }
 
 export async function runAgent(
@@ -17,7 +16,6 @@ export async function runAgent(
   extractionModel: string,
   messages: ChatMessage[],
   temperature: number = 0.7,
-  onChunk?: (chunk: string) => void,
   onToolCall?: (name: string) => void
 ): Promise<AgentResponse> {
   const now = new Date();
@@ -41,8 +39,7 @@ export async function runAgent(
     chatModel,
     apiMessages,
     AGENT_TOOLS,
-    temperature,
-    onChunk
+    temperature
   );
 
   const assistantMessage = response.choices[0]?.message;
@@ -83,8 +80,7 @@ export async function runAgent(
       chatModel,
       followUpMessages,
       undefined,
-      temperature,
-      onChunk
+      temperature
     );
 
     const finalContent = followUpResponse.choices[0]?.message?.content ?? '';

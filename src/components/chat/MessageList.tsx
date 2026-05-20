@@ -6,24 +6,20 @@ import { TypingIndicator } from './TypingIndicator';
 
 interface MessageListProps {
   messages: ChatMessage[];
-  streamingContent: string;
   activeToolCalls: string[];
   isProcessing: boolean;
 }
 
-export function MessageList({ messages, streamingContent, activeToolCalls, isProcessing }: MessageListProps) {
+export function MessageList({ messages, activeToolCalls, isProcessing }: MessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [messages, streamingContent, activeToolCalls]);
+  }, [messages, activeToolCalls]);
 
-  const lastMsg = messages[messages.length - 1];
-  const hasAssistantResponse = lastMsg && lastMsg.role === 'assistant' && lastMsg.content.length > 0;
-
-  if (messages.length === 0 && !streamingContent) {
+  if (messages.length === 0 && !isProcessing) {
     return (
       <div className="h-full flex items-center justify-center px-6">
         <div className="text-center">
@@ -52,7 +48,7 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
           <ToolCallIndicator toolCalls={activeToolCalls} />
         )}
 
-        {isProcessing && !hasAssistantResponse && activeToolCalls.length === 0 && (
+        {isProcessing && activeToolCalls.length === 0 && (
           <TypingIndicator />
         )}
 

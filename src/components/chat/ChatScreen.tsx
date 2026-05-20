@@ -27,7 +27,6 @@ export function ChatScreen({
   const { currentChat, chats, loadChats, loadChat, createNewChat, sendMessage, deleteChat } = useChat();
   const { isProcessing, activeToolCalls, sendMessage: agentSend, runInsightAnalysis } = useAgent();
   const [showHistory, setShowHistory] = useState(false);
-  const [pendingMessage, setPendingMessage] = useState<ChatMessage | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -35,7 +34,6 @@ export function ChatScreen({
   }, [loadChats]);
 
   const messages = currentChat?.messages || [];
-  const displayMessages = pendingMessage ? [...messages, pendingMessage] : messages;
 
   const handleSend = useCallback(async (content: string) => {
     if (!content.trim() || isProcessing) return;
@@ -55,41 +53,30 @@ export function ChatScreen({
 
     const allMessages = [...(currentChat?.messages || []), userMessage];
 
-    let accumulated = '';
     let responseContent = '';
-
     try {
       const response = await agentSend(
         apiKey,
         chatModel,
         extractionModel,
         allMessages,
-        temperature,
-        (chunk) => {
-          accumulated += chunk;
-          setPendingMessage({
-            role: 'assistant',
-            content: accumulated,
-            timestamp: new Date(),
-          });
-        }
+        temperature
       );
-
-      responseContent = response.content ?? '';
+      responseContent = response.content;
     } catch (err) {
-      console.error('Agent error:', err);
       responseContent = `Error: ${err instanceof Error ? err.message : String(err)}`;
     }
 
-    const finalContent = responseContent || accumulated || 'Sorry, I could not generate a response.';
+    if (!responseContent) {
+      responseContent = 'Sorry, I could not generate a response.';
+    }
 
     const assistantMessage: ChatMessage = {
       role: 'assistant',
-      content: finalContent,
+      content: responseContent,
       timestamp: new Date(),
     };
 
-    setPendingMessage(null);
     await sendMessage(chatId!, assistantMessage);
 
     const userCount = [...allMessages, assistantMessage].filter((m) => m.role === 'user').length;
@@ -148,8 +135,7 @@ export function ChatScreen({
 
       <div className="flex-1 overflow-hidden min-h-0">
         <MessageList
-          messages={displayMessages}
-          streamingContent={isProcessing && pendingMessage ? pendingMessage.content : ''}
+          messages={messages}
           activeToolCalls={activeToolCalls}
           isProcessing={isProcessing}
         />

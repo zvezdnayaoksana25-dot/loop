@@ -6,7 +6,6 @@ import type { ChatMessage } from '../types';
 
 export function useAgent() {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [streamingContent, setStreamingContent] = useState('');
   const [activeToolCalls, setActiveToolCalls] = useState<string[]>([]);
   const [lastInsights, setLastInsights] = useState<any[]>([]);
   const messageCountRef = useRef(0);
@@ -17,15 +16,13 @@ export function useAgent() {
       chatModel: string,
       extractionModel: string,
       messages: ChatMessage[],
-      temperature: number,
-      onChunk?: (chunk: string) => void
+      temperature: number
     ) => {
       if (!apiKey) {
         return { content: 'Please set your Groq API key in Settings.', toolCalls: [] };
       }
 
       setIsProcessing(true);
-      setStreamingContent('');
       setActiveToolCalls([]);
 
       try {
@@ -35,7 +32,6 @@ export function useAgent() {
           extractionModel,
           messages,
           temperature,
-          onChunk || ((chunk) => setStreamingContent((prev) => prev + chunk)),
           (toolName) => setActiveToolCalls((prev) => [...prev, toolName])
         );
 
@@ -79,7 +75,6 @@ export function useAgent() {
 
   return {
     isProcessing,
-    streamingContent,
     activeToolCalls,
     lastInsights,
     sendMessage,
