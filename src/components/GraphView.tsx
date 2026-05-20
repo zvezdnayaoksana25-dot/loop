@@ -88,28 +88,29 @@ export default function GraphView() {
     <div className="h-full flex">
       <div className="flex-1 relative">
         <ForceGraph2D
-          graphData={{ nodes, links }}
+          graphData={{ nodes, links } as Record<string, unknown>}
           nodeLabel="label"
-          nodeColor={(node: FGNode) => NODE_COLORS[node.type] || '#737373'}
+          nodeColor={(node: unknown) => NODE_COLORS[(node as FGNode).type] || '#737373'}
           nodeRelSize={4}
           linkWidth={1}
           linkColor={() => '#2a2a2a'}
           backgroundColor="#0a0a0a"
-          onNodeClick={handleNodeClick}
-          nodeCanvasObject={(node: FGNode, ctx, globalScale) => {
-            const label = node.label
+          onNodeClick={(node: unknown) => handleNodeClick(node as FGNode)}
+          nodeCanvasObject={(node: unknown, ctx: CanvasRenderingContext2D, globalScale: number) => {
+            const n = node as FGNode
+            const label = n.label
             const fontSize = 12 / globalScale
-            const color = NODE_COLORS[node.type] || '#737373'
+            const color = NODE_COLORS[n.type] || '#737373'
 
             ctx.beginPath()
-            ctx.arc(node.x!, node.y!, 4, 0, 2 * Math.PI)
+            ctx.arc(n.x!, n.y!, 4, 0, 2 * Math.PI)
             ctx.fillStyle = color
             ctx.fill()
 
             if (globalScale > 0.5) {
               ctx.font = `${fontSize}px sans-serif`
               ctx.fillStyle = color
-              ctx.fillText(label, node.x! + 8, node.y! + 4)
+              ctx.fillText(label, n.x! + 8, n.y! + 4)
             }
           }}
         />
