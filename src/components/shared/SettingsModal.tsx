@@ -78,7 +78,8 @@ export function SettingsModal({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="h-full overflow-y-auto px-4 py-4 space-y-5" style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
           <section>
             <h3 className="text-sm font-medium text-[var(--text-primary)] mb-2">Groq API Key</h3>
             <div className="flex gap-2">
@@ -249,6 +250,7 @@ export function SettingsModal({
           </section>
 
           <div className="h-6" />
+          </div>
         </div>
       </div>
     </>

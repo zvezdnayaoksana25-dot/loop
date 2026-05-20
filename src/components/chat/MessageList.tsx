@@ -38,11 +38,12 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="h-full overflow-y-auto px-4 py-3 space-y-3"
-      style={{ WebkitOverflowScrolling: 'touch' }}
-    >
+    <div className="h-full overflow-hidden">
+      <div
+        ref={containerRef}
+        className="h-full overflow-y-auto px-4 py-3 space-y-3"
+        style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
+      >
       {messages.map((msg, i) => (
         <MessageBubble key={i} message={msg} />
       ))}
@@ -65,6 +66,7 @@ export function MessageList({ messages, streamingContent, activeToolCalls, isPro
       )}
 
       <div className="h-2" />
+      </div>
     </div>
   );
 }

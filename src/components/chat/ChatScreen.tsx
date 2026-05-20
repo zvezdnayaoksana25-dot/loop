@@ -28,6 +28,7 @@ export function ChatScreen({
   const { isProcessing, activeToolCalls, sendMessage: agentSend, runInsightAnalysis } = useAgent();
   const [showHistory, setShowHistory] = useState(false);
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
+  const streamingRef = useRef('');
   const [streamingText, setStreamingText] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -61,6 +62,7 @@ export function ChatScreen({
     await sendMessage(chatId!, userMessage);
 
     const messagesForAgent = [...localMessages, userMessage];
+    streamingRef.current = '';
     setStreamingText('');
 
     const response = await agentSend(
@@ -69,10 +71,13 @@ export function ChatScreen({
       extractionModel,
       messagesForAgent,
       temperature,
-      (chunk) => setStreamingText((prev) => prev + chunk)
+      (chunk) => {
+        streamingRef.current += chunk;
+        setStreamingText(streamingRef.current);
+      }
     );
 
-    const finalContent = response.content || streamingText;
+    const finalContent = response.content || streamingRef.current;
 
     const assistantMessage: ChatMessage = {
       role: 'assistant',
@@ -80,6 +85,7 @@ export function ChatScreen({
       timestamp: new Date(),
     };
 
+    streamingRef.current = '';
     setStreamingText('');
     setLocalMessages((prev) => [...prev, assistantMessage]);
     await sendMessage(chatId!, assistantMessage);
@@ -88,7 +94,7 @@ export function ChatScreen({
     if (userCount > 0 && userCount % insightFrequency === 0) {
       await runInsightAnalysis(apiKey, extractionModel);
     }
-  }, [currentChat, isProcessing, localMessages, streamingText, apiKey, chatModel, extractionModel, temperature, insightFrequency, createNewChat, sendMessage, agentSend, runInsightAnalysis]);
+  }, [currentChat, isProcessing, localMessages, apiKey, chatModel, extractionModel, temperature, insightFrequency, createNewChat, sendMessage, agentSend, runInsightAnalysis]);
 
   const handleNewChat = useCallback(async () => {
     await createNewChat();
